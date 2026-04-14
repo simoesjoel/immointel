@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImmoIntel Ultra — Investissement Immobilier IA</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f6;--bg2:#fff;--bg3:#f5f6fa;--bg4:#e8eaf0;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1f2e;--text2:#5a6270;--text3:#98a3b0;
+  --blue:#1a6fd4;--blue-l:#e8f0fb;
+  --green:#157a32;--green-l:#e4f5ea;
+  --amber:#8a5f00;--amber-l:#fdf3dc;
+  --red:#c0302a;--red-l:#fdecea;
+  --purple:#6340a0;--purple-l:#f0ebfa;
+  --teal:#0d7a6a;--teal-l:#e4f5f2;
+  --col-locatif:#e0620d;--col-maison:#157a32;
+  --col-immeuble:#1a6fd4;--col-appart:#b03888;
+  --col-commercial:#7a4a1a;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:320px 1fr;grid-template-rows:52px 1fr;height:100vh;overflow:hidden}
+
+/* ── TOPBAR ── */
+.topbar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 16px;box-shadow:var(--shadow)}
+.logo{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;letter-spacing:.2px;color:var(--text)}
+.logo-icon{width:28px;height:28px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:16px;height:16px}
+.logo-badge{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--green-l);color:var(--green);font-weight:700}
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.tbadge{font-size:10px;padding:3px 9px;border-radius:4px;font-weight:600}
+.live{background:var(--green-l);color:var(--green);display:flex;align-items:center;gap:4px}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.tb-btn{font-size:11px;padding:5px 11px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-weight:500;white-space:nowrap}
+.tb-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.tb-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 6px rgba(26,111,212,.3)}
+.tb-btn.add{background:var(--green);color:#fff;border-color:var(--green);display:flex;align-items:center;gap:5px}
+.tb-btn.add:hover{background:#1a8a3a}
+.tb-cnt{font-size:11px;color:var(--text2);background:var(--bg3);padding:4px 10px;border-radius:5px;border:1px solid var(--border)}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:2px 0 8px rgba(0,0,0,.04)}
+.s-head{padding:12px 14px 10px;border-bottom:1px solid var(--border)}
+.s-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.s-search-wrap{position:relative}
+.s-search{width:100%;padding:8px 12px 8px 32px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;outline:none;transition:all .2s}
+.s-search:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,111,212,.1)}
+.s-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.s-filters{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px}
+.s-filter{font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-weight:500}
+.s-filter:hover{background:var(--bg3)}
+.s-filter.active{border-color:transparent;color:#fff;font-weight:600}
+.s-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.kpi{background:var(--bg3);border-radius:7px;padding:8px 10px;text-align:center;border:1px solid var(--border)}
+.kpi-val{font-size:15px;font-weight:800;color:var(--text);line-height:1}
+.kpi-lbl{font-size:9px;color:var(--text3);margin-top:3px;font-weight:500}
+.sort-bar{padding:6px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.sort-lbl{font-size:10px;color:var(--text3);font-weight:600}
+.sort-btn{font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
+.sort-btn.active{background:var(--blue-l);color:var(--blue);border-color:rgba(26,111,212,.2)}
+.p-list{flex:1;overflow-y:auto;padding:8px}
+
+/* ── PROPERTY CARD ── */
+.p-card{border:1px solid var(--border);border-radius:10px;margin-bottom:7px;cursor:pointer;background:var(--bg2);overflow:hidden;transition:all .2s;position:relative}
+.p-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:10px 0 0 10px}
+.p-card.type-locatif::before{background:var(--col-locatif)}
+.p-card.type-maison::before{background:var(--col-maison)}
+.p-card.type-immeuble::before{background:var(--col-immeuble)}
+.p-card.type-appartement::before{background:var(--col-appart)}
+.p-card.type-commercial::before{background:var(--col-commercial)}
+.p-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-1px)}
+.p-card.sel{border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,111,212,.15),var(--shadow)}
+.p-head{padding:9px 10px 6px 14px;display:flex;align-items:flex-start;gap:8px}
+.p-thumb{width:44px;height:38px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg3)}
+.p-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.p-inf{flex:1;min-width:0}
+.p-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.p-loc{font-size:10px;color:var(--text2);margin-top:1px;display:flex;align-items:center;gap:3px}
+.p-right{text-align:right;flex-shrink:0}
+.p-price{font-size:13px;font-weight:800;color:var(--text)}
+.p-yield{font-size:10px;font-weight:600;color:var(--green);margin-top:1px}
+.p-tags{padding:0 10px 5px 14px;display:flex;gap:4px;flex-wrap:wrap}
+.ptag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg3);color:var(--text2);font-weight:500}
+.pscore{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700}
+.p-bar{padding:0 10px 9px 14px}
+.p-bar-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.p-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.p-new-badge{position:absolute;top:8px;right:8px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px}
+
+/* ── MAIN AREA ── */
+.main-area{display:grid;grid-template-rows:1fr 320px;overflow:hidden}
+
+/* ── MAP ── */
+.map-wrap{position:relative;overflow:hidden}
+#map{width:100%;height:100%}
+.map-ctrl{position:absolute;top:10px;left:10px;display:flex;gap:7px;z-index:999}
+.map-chip{background:rgba(255,255,255,.95);border:1px solid var(--border2);color:var(--text);font-size:10px;padding:5px 11px;border-radius:6px;display:flex;align-items:center;gap:5px;box-shadow:var(--shadow);cursor:pointer;font-weight:500;transition:all .15s}
+.map-chip:hover{background:#fff;box-shadow:var(--shadow-lg)}
+.map-bottom{position:absolute;bottom:28px;left:10px;display:flex;gap:6px;z-index:999;flex-wrap:wrap}
+.map-stat{background:rgba(255,255,255,.92);border:1px solid var(--border);color:var(--text2);font-size:10px;padding:4px 10px;border-radius:5px;box-shadow:0 1px 4px rgba(0,0,0,.08);font-weight:500}
+.map-stat strong{color:var(--text);font-weight:700}
+
+/* ── DETAIL PANEL ── */
+.detail{background:var(--bg2);border-top:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
+.no-sel{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:10px;color:var(--text3)}
+.no-sel-icon{width:48px;height:48px;border-radius:12px;background:var(--bg3);display:flex;align-items:center;justify-content:center}
+.d-header{display:flex;align-items:center;gap:10px;padding:10px 16px 0;border-bottom:1px solid var(--border);flex-shrink:0}
+.d-prop-name{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.d-prop-meta{font-size:11px;color:var(--text2)}
+.d-tabs{display:flex;gap:2px;margin-left:auto;padding-bottom:0}
+.d-tab{padding:7px 14px;font-size:11px;cursor:pointer;color:var(--text2);border-radius:7px 7px 0 0;border:1px solid transparent;border-bottom:none;transition:all .15s;font-weight:500;white-space:nowrap;background:transparent}
+.d-tab:hover{color:var(--text);background:var(--bg3)}
+.d-tab.active{color:var(--blue);background:var(--bg2);border-color:var(--border);font-weight:700;position:relative}
+.d-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--bg2)}
+.d-content{flex:1;overflow:hidden}
+.tab-pane{display:none;height:100%;overflow-y:auto}
+.tab-pane.active{display:grid;grid-template-columns:200px 1fr 1fr 1fr;height:100%}
+.d-sec{padding:10px 14px;border-right:1px solid var(--border);overflow-y:auto}
+.d-sec:last-child{border-right:none}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.f-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.f-row:last-child{border-bottom:none}
+.f-lbl{font-size:11px;color:var(--text2)}
+.f-val{font-size:11px;font-weight:600;color:var(--text);text-align:right}
+.green{color:var(--green)!important}.amber{color:var(--amber)!important}
+.blue{color:var(--blue)!important}.red{color:var(--red)!important}
+.purple{color:var(--purple)!important}.teal{color:var(--teal)!important}
+.big-n{font-size:20px;font-weight:800;line-height:1;margin:4px 0 2px}
+.sub-n{font-size:10px;color:var(--text3);font-weight:500}
+.divider{height:1px;background:var(--border);margin:7px 0}
+
+/* ── PHOTOS ── */
+.ph-main{border-radius:7px;overflow:hidden;height:72px;background:var(--bg3);margin-bottom:4px;position:relative;cursor:pointer}
+.ph-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.ph-main:hover img{transform:scale(1.03)}
+.ph-live{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.65);color:#fff;font-size:9px;padding:2px 6px;border-radius:3px;display:flex;align-items:center;gap:3px;font-weight:600}
+.ph-live::before{content:'';width:4px;height:4px;border-radius:50%;background:#ff3030;animation:pulse 1s infinite}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px}
+.ph{border-radius:5px;overflow:hidden;aspect-ratio:4/3;background:var(--bg3);cursor:pointer}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
+.ph:hover img{transform:scale(1.05)}
+.ph-sv{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;font-size:10px;color:var(--blue);font-weight:600;background:var(--blue-l);cursor:pointer;transition:all .2s}
+.ph-sv:hover{background:rgba(26,111,212,.15)}
+
+/* ── SCORE ── */
+.score-card{background:var(--bg3);border-radius:9px;padding:10px 12px;margin:8px 0;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
+.score-info .score-big{font-size:17px;font-weight:800}
+.score-info .score-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.reco{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:6px}
+.w-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px;gap:8px}
+.w-item:last-child{border-bottom:none}
+.w-n{color:var(--text2);flex:1}
+
+/* ── AI CRITERIA ── */
+.crit-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px}
+.crit-lbl{color:var(--text2);width:110px;flex-shrink:0}
+.crit-track{flex:1;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.crit-fill{height:100%;border-radius:3px;transition:width .5s}
+.crit-val{font-size:10px;font-weight:700;width:50px;text-align:right}
+
+/* ── CHART TABS ── */
+.chart-wrap{padding:10px;height:100%;display:flex;flex-direction:column}
+.chart-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.chart-canvas-wrap{flex:1;position:relative;min-height:0}
+
+/* ── ADD MODAL ── */
+#add-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center}
+#add-modal.open{display:flex}
+.modal-box{background:#fff;border-radius:14px;padding:28px;width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:6px;color:var(--text)}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.5}
+.modal-textarea{width:100%;height:140px;padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text);outline:none;resize:vertical;font-family:inherit;line-height:1.5}
+.modal-textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,111,212,.1)}
+.modal-sites{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.site-chip{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-weight:500;transition:all .15s}
+.site-chip:hover{background:var(--blue-l);color:var(--blue);border-color:rgba(26,111,212,.3)}
+.modal-btns{display:flex;gap:8px;margin-top:16px}
+.btn-primary{flex:1;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-primary:hover{background:#1560bc}
+.btn-sec{padding:10px 16px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.modal-parsing{display:none;text-align:center;padding:20px}
+.parse-spinner{width:32px;height:32px;border:3px solid var(--bg4);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-result{display:none}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.result-field{background:var(--bg3);border-radius:7px;padding:8px 10px}
+.result-field label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:3px}
+.result-field input{width:100%;background:transparent;border:none;font-size:12px;font-weight:600;color:var(--text);outline:none;font-family:inherit}
+.result-field input:focus{background:var(--bg4);border-radius:4px;padding:2px 4px}
+
+/* ── LEGEND ── */
+.legend-strip{padding:7px 14px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2);font-weight:500}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ── LEAFLET ── */
+.leaflet-popup-content-wrapper{background:#fff;border:1px solid var(--border2);border-radius:10px;box-shadow:var(--shadow-lg);padding:0;overflow:hidden}
+.leaflet-popup-content{margin:0;padding:11px 14px}
+.leaflet-popup-tip{background:#fff}
+.leaflet-control-attribution{display:none}
+.pop-name{font-weight:700;font-size:12px;color:var(--text);margin-bottom:3px}
+.pop-price{font-size:14px;font-weight:800}
+.pop-meta{font-size:10px;color:var(--text2);margin-top:3px}
+.pop-score{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;margin-top:5px}
+.pop-btn{display:block;margin-top:7px;padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;width:100%;text-align:center}
+
+/* ── SOURCE BADGE ── */
+.src-badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    IMMO<span style="color:var(--blue)">INTEL</span>
+    <span class="logo-badge">ULTRA</span>
+  </div>
+  <div class="tb-sep"></div>
+  <span class="tbadge live"><span class="live-dot"></span>LIVE</span>
+  <span id="cnt-badge" class="tb-cnt">— biens</span>
+  <div class="tb-sep"></div>
+  <div class="tb-right">
+    <button class="tb-btn active" onclick="setF('all',this)">Tous</button>
+    <button class="tb-btn" onclick="setF('locatif',this)" style="--fc:var(--col-locatif)">Locatif</button>
+    <button class="tb-btn" onclick="setF('maison',this)">Maison</button>
+    <button class="tb-btn" onclick="setF('immeuble',this)">Immeuble</button>
+    <button class="tb-btn" onclick="setF('appartement',this)">Appartement</button>
+    <button class="tb-btn" onclick="setF('commercial',this)">Commercial</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn add" onclick="openAddModal()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Importer annonce
+    </button>
+  </div>
+</div>
+
+<div id="data-banner" style="display:none;grid-column:1/-1;align-items:center;gap:10px;padding:6px 16px;font-size:11px;font-weight:500;border-bottom:1px solid var(--border);flex-wrap:wrap"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="s-head">
+    <div class="s-title">Portefeuille de biens</div>
+    <div class="s-search-wrap">
+      <svg class="s-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="s-search" type="text" placeholder="Rechercher ville, type, prix..." oninput="doSearch(this.value)">
+    </div>
+  </div>
+  <div class="s-filters" id="type-filters">
+    <button class="s-filter active" style="background:var(--text2)" onclick="setF('all',this)">Tous</button>
+    <button class="s-filter" style="--c:var(--col-locatif)" onclick="setF('locatif',this)">Locatif</button>
+    <button class="s-filter" onclick="setF('maison',this)">Maison</button>
+    <button class="s-filter" onclick="setF('immeuble',this)">Immeuble</button>
+    <button class="s-filter" onclick="setF('appartement',this)">Appart.</button>
+    <button class="s-filter" onclick="setF('commercial',this)">Commercial</button>
+  </div>
+  <div class="s-kpis" id="s-kpis"></div>
+  <div class="sort-bar">
+    <span class="sort-lbl">Trier</span>
+    <button class="sort-btn active" onclick="setSort('score',this)">Score IA</button>
+    <button class="sort-btn" onclick="setSort('price',this)">Prix</button>
+    <button class="sort-btn" onclick="setSort('yield',this)">Rendement</button>
+    <button class="sort-btn" onclick="setSort('cf',this)">Cash-flow</button>
+  </div>
+  <div class="legend-strip">
+    <div class="leg"><div class="leg-dot" style="background:var(--col-locatif)"></div>Locatif</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--col-maison)"></div>Maison</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--col-immeuble)"></div>Immeuble</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--col-appart)"></div>Appart.</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--col-commercial)"></div>Commercial</div>
+  </div>
+  <div class="p-list" id="p-list"></div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main-area">
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="map-ctrl">
+      <div class="map-chip"><span style="width:6px;height:6px;border-radius:50%;background:#e03030;animation:pulse 1s infinite;display:inline-block"></span>OpenStreetMap</div>
+      <div class="map-chip" onclick="toggleSat()" id="sat-btn">Vue satellite</div>
+      <div class="map-chip" onclick="fitAll()">Vue globale</div>
+    </div>
+    <div class="map-bottom" id="map-bottom"></div>
+  </div>
+
+  <!-- ══ DETAIL PANEL ══ -->
+  <div class="detail" id="detail">
+    <div class="no-sel">
+      <div class="no-sel-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#98a3b0" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+      <span style="font-size:12px;font-weight:500">Sélectionnez un bien pour l'analyse complète</span>
+      <span style="font-size:11px;color:var(--text3)">ou importez une annonce via le bouton vert</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ ADD MODAL ══ -->
+<div id="add-modal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div class="modal-title">Importer une annonce</div>
+      <button onclick="closeAddModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3)">×</button>
+    </div>
+    <div class="modal-sub">Copiez-collez le texte complet d'une annonce immobilière depuis n'importe quel site. L'IA extrait et analyse automatiquement toutes les données.</div>
+    <div class="modal-sites">
+      <span style="font-size:10px;color:var(--text3);font-weight:600;align-self:center">Compatible :</span>
+      <span class="site-chip">SeLoger</span>
+      <span class="site-chip">BienIci</span>
+      <span class="site-chip">LeBonCoin</span>
+      <span class="site-chip">PAP</span>
+      <span class="site-chip">Logic-Immo</span>
+      <span class="site-chip">Notaires</span>
+      <span class="site-chip">MeilleursAgents</span>
+      <span class="site-chip">Orpi</span>
+    </div>
+    <textarea class="modal-textarea" id="annonce-text" placeholder="Collez ici le texte de l'annonce...
+
+Exemple :
+Appartement T3 - 68m² - Paris 11e
+Prix : 485 000 €
+Charges : 280€/mois
+DPE : C
+Au 3ème étage d'un immeuble Haussmannien, bel appartement de 68m² comprenant entrée, salon-séjour, 2 chambres, cuisine équipée, salle de bain. Parquet, double vitrage. Proche métro.
+Loyer estimé : 1 800€/mois"></textarea>
+    <div id="modal-parsing" class="modal-parsing">
+      <div class="parse-spinner"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text)">Analyse IA en cours...</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Extraction des données, calcul du score, estimation des travaux</div>
+    </div>
+    <div id="modal-result" class="modal-result">
+      <div style="background:var(--green-l);border:1px solid rgba(21,122,50,.2);border-radius:7px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:600;margin-bottom:12px">
+        ✓ Bien analysé et prêt à importer
+      </div>
+      <div class="result-grid" id="result-grid"></div>
+    </div>
+    <div class="modal-btns" id="modal-btns">
+      <button class="btn-primary" onclick="parseAnnonce()">Analyser avec l'IA</button>
+      <button class="btn-sec" onclick="closeAddModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════
+// COLORS & CONFIG
+// ═══════════════════════
+const COL={locatif:'#e0620d',maison:'#157a32',immeuble:'#1a6fd4',appartement:'#b03888',commercial:'#7a4a1a'};
+const COL_L={locatif:'#fdf0e8',maison:'#e4f5ea',immeuble:'#e8f0fb',appartement:'#f9e8f4',commercial:'#f5ede4'};
+
+// ═══════════════════════
+// DATA — 30 biens
+// ═══════════════════════
+const BASE_PROPS=[
+  {id:1,name:'Immeuble Haussmannien',type:'immeuble',city:'Paris 8e',price:2850000,surface:480,rooms:12,lat:48.874,lng:2.305,dpe:'C',works:[{n:'Ravalement façade',c:85000},{n:'Parties communes',c:42000},{n:'Électricité',c:38000},{n:'Toiture',c:55000}],rental:14200,resale:3150000,lr:3.8,ld:20,trend:'+4.2%',market:'Tension haute',src:'Demo',photos:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600','https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400','https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=400']},
+  {id:2,name:'Maison avec jardin',type:'maison',city:'Lyon 6e',price:680000,surface:165,rooms:6,lat:45.772,lng:4.853,dpe:'B',works:[{n:'Cuisine',c:18000},{n:'Salle de bains',c:12000},{n:'Isolation',c:22000}],rental:2800,resale:750000,lr:3.5,ld:25,trend:'+2.8%',market:'Marché actif',src:'Demo',photos:['https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600','https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400','https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400']},
+  {id:3,name:'Appart. T4 vue mer',type:'appartement',city:'Marseille 7e',price:425000,surface:98,rooms:4,lat:43.289,lng:5.381,dpe:'D',works:[{n:'Rénovation',c:35000},{n:'Double vitrage',c:8500},{n:'Parquet',c:6200}],rental:1850,resale:470000,lr:3.6,ld:20,trend:'+5.1%',market:'Portée touristique',src:'Demo',photos:['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600','https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400']},
+  {id:4,name:'Résidence locative studios',type:'locatif',city:'Toulouse',price:890000,surface:320,rooms:8,lat:43.604,lng:1.444,dpe:'C',works:[{n:'Rénovation 6 studios',c:72000},{n:'Fibre',c:4500},{n:'Interphonie',c:3200}],rental:6400,resale:980000,lr:3.9,ld:20,trend:'+3.5%',market:'Demande étudiante',src:'Demo',photos:['https://images.unsplash.com/photo-1449844908441-8829872d2607?w=600','https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=400','https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400']},
+  {id:5,name:'Villa méditerranéenne',type:'maison',city:'Nice',price:1240000,surface:230,rooms:7,lat:43.710,lng:7.262,dpe:'E',works:[{n:'Piscine',c:28000},{n:'Clim centralisée',c:14000},{n:'Cuisine ext.',c:18000},{n:'Portail',c:6500}],rental:4500,resale:1380000,lr:3.5,ld:20,trend:'+6.3%',market:'Saisonnier premium',src:'Demo',photos:['https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600','https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=400','https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400']},
+  {id:6,name:'Appartement T2 centre',type:'appartement',city:'Bordeaux',price:285000,surface:52,rooms:2,lat:44.837,lng:-0.579,dpe:'C',works:[{n:'Salle de bain',c:7500},{n:'Peinture',c:4200},{n:'Électricité',c:5800}],rental:1100,resale:315000,lr:3.6,ld:20,trend:'+3.1%',market:'Centre historique',src:'Demo',photos:['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600','https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400','https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=400']},
+  {id:7,name:'Résidence locative R+5',type:'locatif',city:'Nantes',price:1650000,surface:680,rooms:18,lat:47.218,lng:-1.553,dpe:'B',works:[{n:'Toiture',c:95000},{n:'Ravalement',c:62000},{n:'Ascenseur',c:45000},{n:'Communs',c:28000}],rental:9800,resale:1850000,lr:3.9,ld:25,trend:'+4.8%',market:'Métropole expansion',src:'Demo',photos:['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600','https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=400','https://images.unsplash.com/photo-1529408686214-b48b8532f72c?w=400']},
+  {id:8,name:'Maison de caractère',type:'maison',city:'Strasbourg',price:520000,surface:185,rooms:7,lat:48.573,lng:7.752,dpe:'D',works:[{n:'Isolation toiture',c:24000},{n:'Chaudière',c:12000},{n:'Fenêtres',c:18500}],rental:2100,resale:580000,lr:3.7,ld:20,trend:'+2.1%',market:'Stable frontalier',src:'Demo',photos:['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600','https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400','https://images.unsplash.com/photo-1600047509358-9dc75507daeb?w=400']},
+  {id:9,name:'Local commercial rue piétonne',type:'commercial',city:'Lille',price:320000,surface:110,rooms:1,lat:50.629,lng:3.057,dpe:'D',works:[{n:'Normes ERP',c:18000},{n:'Vitrine',c:12500},{n:'Électricité',c:8000},{n:'Clim',c:9500}],rental:3200,resale:365000,lr:3.8,ld:15,trend:'+3.8%',market:'Artère prime',src:'Demo',photos:['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600','https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400','https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=400']},
+  {id:10,name:'Plateau bureaux R+2',type:'commercial',city:'Paris 11e',price:780000,surface:240,rooms:1,lat:48.859,lng:2.378,dpe:'C',works:[{n:'Cloisonnement',c:35000},{n:'Faux-plafond',c:22000},{n:'Fibre VDI',c:14000},{n:'Sanitaires',c:16000}],rental:6500,resale:870000,lr:3.9,ld:15,trend:'+2.9%',market:'Tertiaire Paris',src:'Demo',photos:['https://images.unsplash.com/photo-1497366216548-37526070297c?w=600','https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400','https://images.unsplash.com/photo-1562664377-709f2c337eb2?w=400']},
+  {id:11,name:'Appart. T3 Hyper-centre',type:'appartement',city:'Montpellier',price:310000,surface:72,rooms:3,lat:43.610,lng:3.876,dpe:'C',works:[{n:'Rénovation cuisine',c:9000},{n:'Salle de bain',c:8500},{n:'Peinture',c:3500}],rental:1300,resale:345000,lr:3.6,ld:20,trend:'+4.5%',market:'Ville universitaire',src:'Demo',photos:['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600','https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=400','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400']},
+  {id:12,name:'Maison T5 quartier calme',type:'maison',city:'Rennes',price:445000,surface:142,rooms:5,lat:48.117,lng:-1.677,dpe:'B',works:[{n:'Cuisine',c:14000},{n:'Isolation ext.',c:18000}],rental:1900,resale:495000,lr:3.5,ld:20,trend:'+3.2%',market:'Capitale bretonne',src:'Demo',photos:['https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600','https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400','https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400']},
+  {id:13,name:'Immeuble de rapport 8 lots',type:'immeuble',city:'Clermont-Ferrand',price:680000,surface:420,rooms:10,lat:45.777,lng:3.087,dpe:'D',works:[{n:'Ravalement',c:45000},{n:'Toiture',c:38000},{n:'Communs',c:22000}],rental:5200,resale:760000,lr:3.8,ld:20,trend:'+1.9%',market:'Ville stable',src:'Demo',photos:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600','https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=400','https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400']},
+  {id:14,name:'Studio meublé hypercentre',type:'locatif',city:'Paris 5e',price:195000,surface:22,rooms:1,lat:48.849,lng:2.346,dpe:'E',works:[{n:'Rénovation complète',c:22000},{n:'Électricité',c:4500}],rental:1050,resale:215000,lr:3.8,ld:20,trend:'+3.8%',market:'Paris hypercentre',src:'Demo',photos:['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600','https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400','https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=400']},
+  {id:15,name:'Local commercial galerie',type:'commercial',city:'Lyon 2e',price:240000,surface:85,rooms:1,lat:45.757,lng:4.834,dpe:'C',works:[{n:'Normes ERP',c:12000},{n:'Vitrine',c:8500}],rental:2400,resale:275000,lr:3.7,ld:15,trend:'+2.8%',market:'Galerie marchande',src:'Demo',photos:['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600','https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=400','https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400']},
+  {id:16,name:'Villa piscine Luberon',type:'maison',city:'Aix-en-Provence',price:895000,surface:195,rooms:6,lat:43.529,lng:5.447,dpe:'C',works:[{n:'Piscine',c:32000},{n:'Terrasse',c:14000},{n:'Cuisine',c:22000}],rental:3800,resale:980000,lr:3.4,ld:20,trend:'+5.8%',market:'Premium PACA',src:'Demo',photos:['https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600','https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400','https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=400']},
+  {id:17,name:'Immeuble centre-ville 6 lots',type:'immeuble',city:'Grenoble',price:550000,surface:360,rooms:9,lat:45.188,lng:5.724,dpe:'D',works:[{n:'Ravalement',c:38000},{n:'Toiture',c:28000},{n:'Électricité',c:18000}],rental:4100,resale:620000,lr:3.8,ld:20,trend:'+2.4%',market:'Ville universitaire',src:'Demo',photos:['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600','https://images.unsplash.com/photo-1529408686214-b48b8532f72c?w=400','https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400']},
+  {id:18,name:'Appart. T2 vue cathédrale',type:'appartement',city:'Reims',price:198000,surface:48,rooms:2,lat:49.258,lng:4.032,dpe:'C',works:[{n:'Salle de bain',c:6500},{n:'Cuisine',c:5500}],rental:780,resale:218000,lr:3.5,ld:20,trend:'+2.2%',market:'Ville champagne',src:'Demo',photos:['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600','https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400','https://images.unsplash.com/photo-1565183997392-2f6f122e5912?w=400']},
+  {id:19,name:'Entrepôt reconverti loft',type:'commercial',city:'Nantes',price:420000,surface:280,rooms:1,lat:47.209,lng:-1.561,dpe:'D',works:[{n:'Isolation',c:42000},{n:'Électricité',c:25000},{n:'Sanitaires',c:18000}],rental:3800,resale:480000,lr:3.8,ld:15,trend:'+3.1%',market:'Reconversion urbaine',src:'Demo',photos:['https://images.unsplash.com/photo-1497366216548-37526070297c?w=600','https://images.unsplash.com/photo-1562664377-709f2c337eb2?w=400','https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400']},
+  {id:20,name:'Maison T4 proche mer',type:'maison',city:'La Rochelle',price:398000,surface:118,rooms:4,lat:46.160,lng:-1.151,dpe:'C',works:[{n:'Toiture',c:16000},{n:'Cuisine',c:12000},{n:'Isolation',c:9000}],rental:1650,resale:440000,lr:3.6,ld:20,trend:'+4.1%',market:'Littoral Atlantique',src:'Demo',photos:['https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600','https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400','https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400']},
+  {id:21,name:'Studios étudiants 10 lots',type:'locatif',city:'Montpellier',price:1100000,surface:380,rooms:10,lat:43.615,lng:3.872,dpe:'B',works:[{n:'Rénovation 10 lots',c:95000},{n:'Clim',c:28000},{n:'Fibre',c:5500}],rental:8200,resale:1250000,lr:3.9,ld:20,trend:'+5.2%',market:'Campus universitaire',src:'Demo',photos:['https://images.unsplash.com/photo-1449844908441-8829872d2607?w=600','https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400','https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=400']},
+  {id:22,name:'Hôtel particulier',type:'immeuble',city:'Bordeaux',price:2200000,surface:620,rooms:14,lat:44.845,lng:-0.572,dpe:'E',works:[{n:'Rénovation complète',c:380000},{n:'Toiture',c:85000},{n:'Façade',c:65000}],rental:12000,resale:2650000,lr:3.6,ld:25,trend:'+4.8%',market:'Patrimoine bordeaux',src:'Demo',photos:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600','https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400','https://images.unsplash.com/photo-1529408686214-b48b8532f72c?w=400']},
+  {id:23,name:'Appart. T1 bis locatif',type:'locatif',city:'Lyon 3e',price:168000,surface:32,rooms:1,lat:45.756,lng:4.854,dpe:'D',works:[{n:'Rénovation',c:14000},{n:'Électricité',c:3800}],rental:750,resale:188000,lr:3.7,ld:20,trend:'+3.0%',market:'Locatif tendu',src:'Demo',photos:['https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=600','https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400','https://images.unsplash.com/photo-1565183997392-2f6f122e5912?w=400']},
+  {id:24,name:'Mas provençal',type:'maison',city:'Avignon',price:750000,surface:240,rooms:8,lat:43.949,lng:4.806,dpe:'D',works:[{n:'Piscine',c:45000},{n:'Toiture tuiles',c:28000},{n:'Volets',c:12000}],rental:3200,resale:840000,lr:3.5,ld:20,trend:'+3.9%',market:'Vaucluse premium',src:'Demo',photos:['https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600','https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400','https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400']},
+  {id:25,name:'Bureaux R+1 avec parking',type:'commercial',city:'Toulouse',price:560000,surface:195,rooms:1,lat:43.601,lng:1.452,dpe:'B',works:[{n:'Open space',c:28000},{n:'Clim',c:18000},{n:'Fibre',c:8000}],rental:4800,resale:625000,lr:3.8,ld:15,trend:'+2.5%',market:'Aéropole Toulouse',src:'Demo',photos:['https://images.unsplash.com/photo-1497366216548-37526070297c?w=600','https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400','https://images.unsplash.com/photo-1497215842964-222b430dc094?w=400']},
+  {id:26,name:'Chalet montagne',type:'maison',city:'Annecy',price:890000,surface:175,rooms:6,lat:45.899,lng:6.129,dpe:'C',works:[{n:'Isolation',c:22000},{n:'Cuisine',c:18000},{n:'Terrasse bois',c:14000}],rental:3800,resale:980000,lr:3.4,ld:20,trend:'+6.5%',market:'Haute-Savoie premium',src:'Demo',photos:['https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600','https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400','https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400']},
+  {id:27,name:'Appart. T5 haut de gamme',type:'appartement',city:'Paris 16e',price:1650000,surface:145,rooms:5,lat:48.863,lng:2.280,dpe:'C',works:[{n:'Rénovation luxe',c:95000},{n:'Domotique',c:22000}],rental:5800,resale:1820000,lr:3.5,ld:20,trend:'+3.2%',market:'Résidentiel premium',src:'Demo',photos:['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600','https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=400','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400']},
+  {id:28,name:'Résidence senior 12 lots',type:'locatif',city:'Dijon',price:920000,surface:520,rooms:12,lat:47.322,lng:5.041,dpe:'B',works:[{n:'Ascenseur',c:48000},{n:'Communs',c:32000},{n:'Accessibilité',c:24000}],rental:6800,resale:1050000,lr:3.8,ld:20,trend:'+2.1%',market:'Silver economy',src:'Demo',photos:['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600','https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=400','https://images.unsplash.com/photo-1529408686214-b48b8532f72c?w=400']},
+  {id:29,name:'Maison T6 en duplex',type:'maison',city:'Nîmes',price:325000,surface:155,rooms:6,lat:43.836,lng:4.360,dpe:'D',works:[{n:'Toiture',c:18000},{n:'Cuisine',c:12000},{n:'Piscine',c:25000}],rental:1350,resale:370000,lr:3.7,ld:20,trend:'+2.6%',market:'Gard résidentiel',src:'Demo',photos:['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600','https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400','https://images.unsplash.com/photo-1600047509358-9dc75507daeb?w=400']},
+  {id:30,name:'Immeuble mixte commerce+appart',type:'immeuble',city:'Strasbourg',price:1250000,surface:580,rooms:10,lat:48.581,lng:7.745,dpe:'C',works:[{n:'Ravalement',c:55000},{n:'Façade',c:32000},{n:'Communs',c:25000}],rental:8400,resale:1420000,lr:3.8,ld:20,trend:'+2.8%',market:'Alsace transfrontalier',src:'Demo',photos:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600','https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400','https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400']},
+];
+
+let PROPS=[...BASE_PROPS];
+
+const SCRAPER_URL = "http://localhost:8765/immointel-data.json";
+
+async function loadRealData() {
+  const banner = document.getElementById("data-banner");
+  try {
+    const res = await fetch(SCRAPER_URL, { cache: "no-cache" });
+    if (!res.ok) throw new Error("indispo");
+    const data = await res.json();
+    const scraped = data.properties || [];
+    if (!scraped.length) throw new Error("vide");
+    const demoIds = new Set(BASE_PROPS.map(p => p.id));
+    PROPS = [...scraped.filter(p => !demoIds.has(p.id)), ...BASE_PROPS];
+    const t = new Date(data.lastUpdated).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    if (banner) { banner.style.display="flex"; banner.style.background="#e4f5ea"; banner.style.borderColor="rgba(21,122,50,.25)"; banner.innerHTML=`<span style="width:7px;height:7px;border-radius:50%;background:#157a32;flex-shrink:0;animation:pulse 1.5s infinite"></span><span style="color:#157a32"><strong>${scraped.length} biens réels</strong> chargés — SeLoger · BienIci · LeBonCoin · PAP — ${t}</span><button onclick="loadRealData()" style="margin-left:auto;background:none;border:1px solid rgba(21,122,50,.3);border-radius:4px;padding:2px 8px;font-size:10px;color:#157a32;cursor:pointer">Actualiser</button>`; }
+    renderList(); placeMarkers();
+  } catch(e) {
+    if (banner) { banner.style.display="flex"; banner.style.background="#fdf3dc"; banner.style.borderColor="rgba(138,95,0,.2)"; banner.innerHTML=`<span style="width:7px;height:7px;border-radius:50%;background:#8a5f00;flex-shrink:0"></span><span style="color:#8a5f00">Mode démo · Pour charger vos vrais biens : Terminal → <code style="background:#fff;padding:1px 5px;border-radius:3px">cd ~/Downloads/immointel-scraper && python3 -m http.server 8765</code></span><button onclick="loadRealData()" style="margin-left:auto;background:none;border:1px solid rgba(138,95,0,.3);border-radius:4px;padding:2px 8px;font-size:10px;color:#8a5f00;cursor:pointer">Réessayer</button>`; }
+  }
+}
+setInterval(loadRealData, 5*60*1000);
+let selId=null, curF='all', searchQ='', sortBy='score', map, markers=[], isSat=false, charts={};
+
+// ═══════════════════════
+// HELPERS
+// ═══════════════════════
+function fp(n){if(n>=1e6)return(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M€';if(n>=1e3)return Math.round(n/1e3)+'k€';return n+'€'}
+function tw(p){return p.works.reduce((a,w)=>a+w.c,0)}
+function gY(p){return(p.rental*12)/(p.price+tw(p))*100}
+function monthly(p){const t=p.price+tw(p),r=p.lr/100/12,n=p.ld*12;return Math.round((t*r)/(1-Math.pow(1+r,-n)))}
+function cf(p){return p.rental-monthly(p)}
+function sc(s){return s>=82?'#157a32':s>=68?'#8a5f00':'#c0302a'}
+function scBg(s){return s>=82?'#e4f5ea':s>=68?'#fdf3dc':'#fdecea'}
+function scL(s){return s>=85?'Excellent':s>=78?'Très bon':s>=68?'Bon':s>=55?'Moyen':'Faible'}
+function reco(s){return s>=82?{t:'✓ Acheter',c:'#157a32',bg:'#e4f5ea'}:s>=70?{t:'↗ Négocier',c:'#8a5f00',bg:'#fdf3dc'}:{t:'⚠ Prudence',c:'#c0302a',bg:'#fdecea'}}
+function dpeC(d){return{A:'#157a32',B:'#2a8a40',C:'#7a9a20',D:'#c88a00',E:'#c0602a',F:'#c0302a'}[d]||'#98a3b0'}
+
+// ═══════════════════════
+// AI SCORING ENGINE
+// ═══════════════════════
+function aiScore(p){
+  const t=tw(p),gy=gY(p),c=cf(p),upside=((p.resale/(p.price+t))-1)*100,twr=t/p.price;
+  let s=0;
+  s+=gy>=8?30:gy>=6?24:gy>=4?16:gy>=3?8:2;
+  s+=c>=500?20:c>=200?15:c>=0?10:c>=-300?4:0;
+  s+=upside>=20?20:upside>=12?15:upside>=6?10:upside>=0?5:0;
+  s+=twr<=0.05?15:twr<=0.1?12:twr<=0.2?8:twr<=0.3?4:1;
+  s+={A:10,B:9,C:7,D:5,E:2,F:0}[p.dpe]||5;
+  return Math.min(99,Math.round(s));
+}
+function aiCriteria(p){
+  const t=tw(p),gy=gY(p),c=cf(p),upside=((p.resale/(p.price+t))-1)*100,twr=t/p.price;
+  return[
+    {l:'Rendement brut',v:gy.toFixed(1)+'%',s:Math.min(100,gy>=8?95:gy>=6?75:gy>=4?50:25)},
+    {l:'Cash-flow',v:(c>=0?'+':'')+Math.round(c)+'€/m',s:c>=500?95:c>=200?75:c>=0?55:20},
+    {l:'Plus-value pot.',v:'+'+upside.toFixed(0)+'%',s:upside>=20?95:upside>=12?75:upside>=6?55:30},
+    {l:'Ratio travaux',v:Math.round(twr*100)+'%',s:twr<=0.05?95:twr<=0.1?75:twr<=0.2?55:25},
+    {l:'DPE',v:p.dpe,s:{A:100,B:85,C:65,D:45,E:20,F:5}[p.dpe]||50},
+  ];
+}
+
+// ═══════════════════════
+// MAP
+// ═══════════════════════
+function initMap(){
+  map=L.map('map',{zoomControl:true,attributionControl:false}).setView([46.6,2.3],5.5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  placeMarkers();
+}
+function placeMarkers(){
+  markers.forEach(m=>m.remove());markers=[];
+  filtered().forEach(p=>{
+    const sel=p.id===selId,s=aiScore(p),c=COL[p.type];
+    const icon=L.divIcon({className:'',
+      html:`<div style="width:${sel?18:13}px;height:${sel?18:13}px;border-radius:50%;background:${c};border:${sel?'3px solid #fff':'2px solid rgba(255,255,255,0.8)'};box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer;transition:all .2s${sel?';box-shadow:0 0 0 4px '+c+'40':''}"></div>`,
+      iconSize:[sel?18:13,sel?18:13],iconAnchor:[sel?9:6.5,sel?9:6.5]});
+    const m=L.marker([p.lat,p.lng],{icon}).addTo(map);
+    m.bindPopup(L.popup({closeButton:false,offset:[0,-4],maxWidth:210}).setContent(
+      `<div class="pop-name">${p.name}</div>
+       <div class="pop-price" style="color:${c}">${fp(p.price)}</div>
+       <div class="pop-meta">${p.city} · ${p.surface}m² · ${gY(p).toFixed(1)}% brut</div>
+       <span class="pop-score" style="background:${scBg(s)};color:${sc(s)}">Score IA ${s}/100 — ${scL(s)}</span>
+       <button class="pop-btn" onclick="selectProp(${p.id})">Voir l'analyse →</button>`
+    ));
+    m.on('click',()=>selectProp(p.id));
+    markers.push(m);
+  });
+}
+function toggleSat(){
+  isSat=!isSat;
+  map.eachLayer(l=>{if(l instanceof L.TileLayer)map.removeLayer(l)});
+  L.tileLayer(isSat?'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}':'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  document.getElementById('sat-btn').textContent=isSat?'Vue carte':'Vue satellite';
+  setTimeout(placeMarkers,300);
+}
+function fitAll(){
+  const fl=filtered();
+  if(!fl.length)return;
+  map.fitBounds(fl.map(p=>[p.lat,p.lng]),{padding:[30,30]});
+}
+
+// ═══════════════════════
+// LIST & FILTERS
+// ═══════════════════════
+function filtered(){
+  return PROPS.filter(p=>(curF==='all'||p.type===curF)&&(!searchQ||p.name.toLowerCase().includes(searchQ)||p.city.toLowerCase().includes(searchQ)||p.type.includes(searchQ)));
+}
+function sorted(fl){
+  return [...fl].sort((a,b)=>{
+    if(sortBy==='score')return aiScore(b)-aiScore(a);
+    if(sortBy==='price')return a.price-b.price;
+    if(sortBy==='yield')return gY(b)-gY(a);
+    if(sortBy==='cf')return cf(b)-cf(a);
+    return 0;
+  });
+}
+
+function renderList(){
+  const fl=sorted(filtered());
+  document.getElementById('cnt-badge').textContent=fl.length+' bien'+(fl.length>1?'s':'');
+  document.getElementById('p-list').innerHTML=fl.map(p=>{
+    const s=aiScore(p),y=gY(p).toFixed(1),isNew=p.isNew;
+    return`<div class="p-card type-${p.type}${p.id===selId?' sel':''}" onclick="selectProp(${p.id})">
+      ${isNew?'<div class="p-new-badge">NOUVEAU</div>':''}
+      <div class="p-head">
+        <div class="p-thumb"><img src="${p.photos[0]}" onerror="this.style.background='#eef0f4'" loading="lazy"></div>
+        <div class="p-inf">
+          <div class="p-name">${p.name}</div>
+          <div class="p-loc">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${p.city} · ${p.surface}m²
+          </div>
+        </div>
+        <div class="p-right">
+          <div class="p-price">${fp(p.price)}</div>
+          <div class="p-yield">${y}% brut</div>
+        </div>
+      </div>
+      <div class="p-tags">
+        <span class="ptag" style="background:${COL_L[p.type]};color:${COL[p.type]}">${p.type}</span>
+        <span class="ptag">DPE <span style="color:${dpeC(p.dpe)};font-weight:700">${p.dpe}</span></span>
+        ${p.type==='commercial'?'<span class="ptag" style="background:#f5ede4;color:#7a4a1a">Murs seuls</span>':''}
+        ${p.src&&p.src!=='Demo'?`<span class="src-badge" style="background:#e8f0fb;color:#1a6fd4">${p.src}</span>`:''}
+        <span class="pscore" style="background:${scBg(s)};color:${sc(s)}">${s}/100</span>
+      </div>
+      <div class="p-bar">
+        <div class="p-bar-track"><div class="p-bar-fill" style="width:${s}%;background:${sc(s)}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+  renderKPIs(fl);
+  renderMapStats(fl);
+}
+
+function renderKPIs(fl){
+  if(!fl.length){document.getElementById('s-kpis').innerHTML='';return}
+  const avgP=Math.round(fl.reduce((a,p)=>a+p.price,0)/fl.length);
+  const avgY=(fl.reduce((a,p)=>a+gY(p),0)/fl.length).toFixed(1);
+  const top=fl.filter(p=>aiScore(p)>=80).length;
+  document.getElementById('s-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-val">${fp(avgP)}</div><div class="kpi-lbl">Prix moyen</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--green)">${avgY}%</div><div class="kpi-lbl">Rend. moyen</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--blue)">${top}</div><div class="kpi-lbl">Score 80+</div></div>`;
+}
+
+function renderMapStats(fl){
+  if(!fl.length)return;
+  const avgY=(fl.reduce((a,p)=>a+gY(p),0)/fl.length).toFixed(1);
+  document.getElementById('map-bottom').innerHTML=`
+    <div class="map-stat">Prix moy. <strong>${fp(Math.round(fl.reduce((a,p)=>a+p.price,0)/fl.length))}</strong></div>
+    <div class="map-stat">Rendement moy. <strong>${avgY}%</strong></div>
+    <div class="map-stat"><strong>${fl.filter(p=>aiScore(p)>=80).length}</strong> opportunités IA</div>
+    <div class="map-stat">${fl.length} biens affichés</div>`;
+}
+
+// ═══════════════════════
+// SELECT & DETAIL
+// ═══════════════════════
+function selectProp(id){
+  selId=id;
+  const p=PROPS.find(x=>x.id===id);
+  if(p&&map)map.flyTo([p.lat,p.lng],13,{duration:1.2});
+  renderList();placeMarkers();
+  renderDetail();
+}
+
+function renderDetail(){
+  const panel=document.getElementById('detail');
+  const p=PROPS.find(x=>x.id===selId);
+  if(!p){
+    panel.innerHTML=`<div class="no-sel"><div class="no-sel-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#98a3b0" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><span style="font-size:12px;font-weight:500">Sélectionnez un bien</span><span style="font-size:11px;color:var(--text3)">ou importez une annonce</span></div>`;
+    return;
+  }
+  const t=tw(p),total=p.price+t,notaire=Math.round(p.price*.08);
+  const m=monthly(p),loanTotal=m*p.ld*12,loanCost=loanTotal-total;
+  const gy=gY(p).toFixed(1),ny=(gY(p)*.72).toFixed(1),c=cf(p),pv=p.resale-total;
+  const s=aiScore(p),rc=reco(s),crit=aiCriteria(p);
+
+  panel.innerHTML=`
+  <div class="d-header">
+    <div>
+      <div class="d-prop-name">${p.name}</div>
+      <div class="d-prop-meta">${p.city} · ${p.surface}m² · ${fp(p.price)} · DPE <span style="color:${dpeC(p.dpe)};font-weight:700">${p.dpe}</span></div>
+    </div>
+    <div class="d-tabs">
+      <div class="d-tab active" onclick="showTab('overview',this)">Vue d'ensemble</div>
+      <div class="d-tab" onclick="showTab('finance',this)">Financement</div>
+      <div class="d-tab" onclick="showTab('yield',this)">Rendement</div>
+      <div class="d-tab" onclick="showTab('resale',this)">Revente</div>
+    </div>
+  </div>
+  <div class="d-content">
+
+    <!-- TAB: VUE D'ENSEMBLE -->
+    <div class="tab-pane active" id="tab-overview">
+      <div class="d-sec">
+        <div class="sec-lbl">Photos</div>
+        <div class="ph-main" onclick="openSV(${p.lat},${p.lng})">
+          <img src="${p.photos[0]}" onerror="this.style.background='#eef0f4'" loading="lazy">
+          <div class="ph-live">LIVE</div>
+        </div>
+        <div class="photo-grid">
+          <div class="ph"><img src="${p.photos[1]||p.photos[0]}" onerror="this.style.background='#eef0f4'" loading="lazy"></div>
+          <div class="ph ph-sv" onclick="openSV(${p.lat},${p.lng})">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span>Street View</span>
+          </div>
+        </div>
+        <div class="f-row"><span class="f-lbl">Tendance</span><span class="f-val green">${p.trend}/an</span></div>
+        <div class="f-row"><span class="f-lbl">Marché</span><span class="f-val" style="font-size:10px">${p.market}</span></div>
+        ${p.type==='commercial'?`<div class="f-row"><span class="f-lbl">Bail</span><span class="f-val teal">3-6-9</span></div><div class="f-row"><span class="f-lbl">Nature</span><span class="f-val" style="color:#7a4a1a;font-size:10px">Murs uniquement</span></div>`:''}
+      </div>
+      <div class="d-sec">
+        <div class="sec-lbl">Score IA & Recommandation</div>
+        <div class="score-card">
+          <svg width="54" height="54" viewBox="0 0 54 54">
+            <circle cx="27" cy="27" r="22" fill="none" stroke="#e8eaf0" stroke-width="4.5"/>
+            <circle cx="27" cy="27" r="22" fill="none" stroke="${sc(s)}" stroke-width="4.5" stroke-linecap="round"
+              stroke-dasharray="${s*1.382} 138.2" transform="rotate(-90 27 27)"/>
+            <text x="27" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="${sc(s)}" font-family="-apple-system,sans-serif">${s}</text>
+          </svg>
+          <div class="score-info">
+            <div class="score-big" style="color:${sc(s)}">${scL(s)}</div>
+            <div class="score-sub">Score IA / 100</div>
+            <div class="reco" style="background:${rc.bg};color:${rc.c}">${rc.t}</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Analyse par critère</div>
+        ${crit.map(c=>`<div class="crit-row">
+          <span class="crit-lbl">${c.l}</span>
+          <div class="crit-track"><div class="crit-fill" style="width:${c.s}%;background:${c.s>=70?'var(--green)':c.s>=45?'var(--amber)':'var(--red)'}"></div></div>
+          <span class="crit-val" style="color:${c.s>=70?'var(--green)':c.s>=45?'var(--amber)':'var(--red)'}">${c.v}</span>
+        </div>`).join('')}
+      </div>
+      <div class="d-sec">
+        <div class="sec-lbl">Devis travaux estimés</div>
+        ${p.works.map(w=>`<div class="w-item"><span class="w-n">${w.n}</span><span class="f-val amber">${fp(w.c)}</span></div>`).join('')}
+        <div class="divider"></div>
+        <div class="f-row"><span class="f-lbl">Total travaux</span><span class="f-val red">${fp(t)}</span></div>
+        <div class="f-row"><span class="f-lbl">Prix d'achat</span><span class="f-val">${fp(p.price)}</span></div>
+        <div class="f-row"><span class="f-lbl">Frais notaire (~8%)</span><span class="f-val">${fp(notaire)}</span></div>
+        <div class="f-row"><span class="f-lbl" style="font-weight:700">Projet total</span><span class="f-val blue">${fp(total+notaire)}</span></div>
+      </div>
+      <div class="d-sec">
+        <div class="sec-lbl">Résumé financier</div>
+        <div class="sub-n">Cash-flow mensuel</div>
+        <div class="big-n ${c>=0?'green':'red'}">${c>=0?'+':''}${Math.round(c).toLocaleString('fr')} €</div>
+        <div class="divider"></div>
+        <div class="f-row"><span class="f-lbl">Loyer estimé</span><span class="f-val green">${p.rental.toLocaleString('fr')} €/m</span></div>
+        <div class="f-row"><span class="f-lbl">Mensualité crédit</span><span class="f-val red">${m.toLocaleString('fr')} €/m</span></div>
+        <div class="f-row"><span class="f-lbl">Rendement brut</span><span class="f-val green">${gy}%</span></div>
+        <div class="f-row"><span class="f-lbl">Rendement net</span><span class="f-val green">${ny}%</span></div>
+        <div class="divider"></div>
+        <div class="sub-n">Plus-value estimée</div>
+        <div class="big-n ${pv>=0?'green':'red'}">${pv>=0?'+':''}${fp(pv)}</div>
+        <div class="f-row"><span class="f-lbl">Prix revente</span><span class="f-val">${fp(p.resale)}</span></div>
+        <div class="f-row"><span class="f-lbl">Hausse</span><span class="f-val green">+${(((p.resale/total)-1)*100).toFixed(1)}%</span></div>
+      </div>
+    </div>
+
+    <!-- TAB: FINANCEMENT -->
+    <div class="tab-pane" id="tab-finance">
+      <div class="d-sec">
+        <div class="sec-lbl">Paramètres du prêt</div>
+        <div class="f-row"><span class="f-lbl">Capital</span><span class="f-val">${fp(total)}</span></div>
+        <div class="f-row"><span class="f-lbl">Apport conseillé (10%)</span><span class="f-val">${fp(Math.round(total*.1))}</span></div>
+        <div class="f-row"><span class="f-lbl">Taux estimé</span><span class="f-val">${p.lr}%</span></div>
+        <div class="f-row"><span class="f-lbl">Durée</span><span class="f-val">${p.ld} ans</span></div>
+        <div class="f-row"><span class="f-lbl">Assurance (~0.3%)</span><span class="f-val">${fp(Math.round(total*.003/12))}/m</span></div>
+        <div class="divider"></div>
+        <div class="sub-n">Mensualité totale</div>
+        <div class="big-n blue">${m.toLocaleString('fr')} €<span style="font-size:12px;font-weight:500">/mois</span></div>
+        <div class="f-row"><span class="f-lbl">Total remboursé</span><span class="f-val">${fp(loanTotal)}</span></div>
+        <div class="f-row"><span class="f-lbl">Coût du crédit</span><span class="f-val red">${fp(loanCost)}</span></div>
+        <div class="f-row"><span class="f-lbl">Coût total projet</span><span class="f-val">${fp(total+notaire)}</span></div>
+      </div>
+      <div class="d-sec" style="grid-column:span 3">
+        <div class="chart-wrap">
+          <div class="chart-title">
+            <span>Simulation remboursement sur ${p.ld} ans</span>
+            <span style="font-size:10px;color:var(--text3)">Capital vs intérêts</span>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-loan"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RENDEMENT -->
+    <div class="tab-pane" id="tab-yield">
+      <div class="d-sec">
+        <div class="sec-lbl">Revenus locatifs</div>
+        <div class="sub-n">Loyer mensuel estimé</div>
+        <div class="big-n green">${p.rental.toLocaleString('fr')} €<span style="font-size:12px;font-weight:500">/mois</span></div>
+        <div class="f-row"><span class="f-lbl">Loyer annuel</span><span class="f-val green">${fp(p.rental*12)}</span></div>
+        <div class="f-row"><span class="f-lbl">Loyer/m²/mois</span><span class="f-val">${(p.rental/p.surface).toFixed(1)} €</span></div>
+        <div class="divider"></div>
+        <div class="f-row"><span class="f-lbl">Rendement brut</span><span class="f-val green">${gy}%</span></div>
+        <div class="f-row"><span class="f-lbl">Rendement net</span><span class="f-val green">${ny}%</span></div>
+        <div class="f-row"><span class="f-lbl">Cash-flow mensuel</span><span class="f-val ${c>=0?'green':'red'}">${c>=0?'+':''}${Math.round(c).toLocaleString('fr')} €</span></div>
+        <div class="f-row"><span class="f-lbl">Cash-flow annuel</span><span class="f-val ${c>=0?'green':'red'}">${c>=0?'+':''}${fp(Math.round(c*12))}</span></div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Fiscalité</div>
+        ${p.type==='commercial'?`
+          <div class="f-row"><span class="f-lbl">SCI IS + bail 3-6-9</span><span class="f-val green">Recommandé</span></div>
+          <div class="f-row"><span class="f-lbl">TVA récupérable</span><span class="f-val green">Oui (20%)</span></div>
+          <div class="f-row"><span class="f-lbl">Amort. murs</span><span class="f-val amber">~40 ans</span></div>
+        `:`
+          <div class="f-row"><span class="f-lbl">LMNP amortissement</span><span class="f-val green">${gY(p)>=5?'Recommandé':'À étudier'}</span></div>
+          <div class="f-row"><span class="f-lbl">SCI à l'IS</span><span class="f-val amber">À étudier</span></div>
+          <div class="f-row"><span class="f-lbl">Déficit foncier</span><span class="f-val">${t>15000?'Applicable':'Limité'}</span></div>
+        `}
+      </div>
+      <div class="d-sec" style="grid-column:span 3">
+        <div class="chart-wrap">
+          <div class="chart-title"><span>Projection revenus locatifs sur 10 ans</span></div>
+          <div class="chart-canvas-wrap"><canvas id="chart-yield"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: REVENTE -->
+    <div class="tab-pane" id="tab-resale">
+      <div class="d-sec">
+        <div class="sec-lbl">Données revente</div>
+        <div class="f-row"><span class="f-lbl">Prix achat + travaux</span><span class="f-val">${fp(total)}</span></div>
+        <div class="f-row"><span class="f-lbl">Prix revente estimé</span><span class="f-val">${fp(p.resale)}</span></div>
+        <div class="divider"></div>
+        <div class="sub-n">Plus-value brute</div>
+        <div class="big-n ${pv>=0?'green':'red'}">${pv>=0?'+':''}${fp(pv)}</div>
+        <div class="f-row"><span class="f-lbl">Hausse estimée</span><span class="f-val green">+${(((p.resale/total)-1)*100).toFixed(1)}%</span></div>
+        <div class="f-row"><span class="f-lbl">Prix/m²</span><span class="f-val">${Math.round(p.price/p.surface).toLocaleString('fr')} €</span></div>
+        <div class="f-row"><span class="f-lbl">Revente/m²</span><span class="f-val">${Math.round(p.resale/p.surface).toLocaleString('fr')} €</span></div>
+        <div class="f-row"><span class="f-lbl">Tendance marché</span><span class="f-val green">${p.trend}/an</span></div>
+        <div class="divider"></div>
+        <div class="f-row"><span class="f-lbl">Tension locative</span><span class="f-val ${gY(p)>=5?'green':'amber'}">${gY(p)>=6?'Forte':gY(p)>=4?'Moyenne':'Faible'}</span></div>
+        <div class="f-row"><span class="f-lbl">Marché</span><span class="f-val" style="font-size:10px">${p.market}</span></div>
+      </div>
+      <div class="d-sec" style="grid-column:span 3">
+        <div class="chart-wrap">
+          <div class="chart-title"><span>Projection valeur du bien sur 10 ans</span></div>
+          <div class="chart-canvas-wrap"><canvas id="chart-resale"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+
+  // Render charts after DOM update
+  setTimeout(()=>renderCharts(p),50);
+}
+
+// ═══════════════════════
+// CHARTS
+// ═══════════════════════
+function renderCharts(p){
+  const t=tw(p),total=p.price+t;
+  Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});
+  charts={};
+  const yrs=Array.from({length:p.ld},(_,i)=>i+1);
+
+  // LOAN CHART
+  const lc=document.getElementById('chart-loan');
+  if(lc){
+    const r=p.lr/100/12,n=p.ld*12,pm=monthly(p);
+    let bal=total;
+    const capArr=[],intArr=[];
+    for(let y=1;y<=p.ld;y++){
+      let capY=0,intY=0;
+      for(let m=0;m<12;m++){const i=bal*r;intY+=i;capY+=(pm-i);bal-=(pm-i);}
+      capArr.push(Math.round(capY));intArr.push(Math.round(intY));
+    }
+    charts.loan=new Chart(lc,{type:'bar',data:{labels:yrs.map(y=>'An '+y),datasets:[
+      {label:'Capital remboursé',data:capArr,backgroundColor:'rgba(26,111,212,.7)',borderRadius:3},
+      {label:'Intérêts',data:intArr,backgroundColor:'rgba(192,48,42,.55)',borderRadius:3}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{font:{size:9},callback:v=>fp(v)}}}}});
+  }
+
+  // YIELD CHART
+  const yc=document.getElementById('chart-yield');
+  if(yc){
+    const growthRate=1.02;
+    const years=Array.from({length:10},(_,i)=>i+1);
+    const cumRev=years.map(y=>Math.round(p.rental*12*((Math.pow(growthRate,y)-1)/(growthRate-1))));
+    const cumCF=years.map(y=>Math.round(cf(p)*12*((Math.pow(growthRate,y)-1)/(growthRate-1))));
+    charts.yield=new Chart(yc,{type:'line',data:{labels:years.map(y=>'An '+y),datasets:[
+      {label:'Revenus cumulés',data:cumRev,borderColor:'#157a32',backgroundColor:'rgba(21,122,50,.08)',fill:true,tension:.4,pointRadius:3},
+      {label:'Cash-flow cumulé',data:cumCF,borderColor:'#1a6fd4',backgroundColor:'rgba(26,111,212,.06)',fill:true,tension:.4,pointRadius:3}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>fp(v)}}}}});
+  }
+
+  // RESALE CHART
+  const rc2=document.getElementById('chart-resale');
+  if(rc2){
+    const tr=parseFloat(p.trend)/100||0.03;
+    const years=Array.from({length:10},(_,i)=>i+1);
+    const vals=years.map(y=>Math.round((p.price+tw(p))*Math.pow(1+tr,y)));
+    const invested=Array(10).fill(p.price+tw(p)+Math.round(p.price*.08));
+    charts.resale=new Chart(rc2,{type:'line',data:{labels:years.map(y=>'An '+y),datasets:[
+      {label:'Valeur estimée',data:vals,borderColor:'#157a32',backgroundColor:'rgba(21,122,50,.08)',fill:true,tension:.4,pointRadius:4},
+      {label:'Capital investi',data:invested,borderColor:'#c0302a',borderDash:[5,5],backgroundColor:'transparent',tension:0,pointRadius:0}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>fp(v)}}}}});
+  }
+}
+
+// ═══════════════════════
+// TABS
+// ═══════════════════════
+function showTab(tab, el){
+  document.querySelectorAll('.d-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const pane=document.getElementById('tab-'+tab);
+  if(pane){
+    pane.classList.add('active');
+    const p=PROPS.find(x=>x.id===selId);
+    if(p)setTimeout(()=>renderCharts(p),50);
+  }
+}
+
+// ═══════════════════════
+// IMPORT MODAL
+// ═══════════════════════
+function openAddModal(){
+  document.getElementById('add-modal').classList.add('open');
+  document.getElementById('modal-parsing').style.display='none';
+  document.getElementById('modal-result').style.display='none';
+  document.getElementById('modal-btns').innerHTML=`<button class="btn-primary" onclick="parseAnnonce()">Analyser avec l'IA</button><button class="btn-sec" onclick="closeAddModal()">Annuler</button>`;
+  document.getElementById('annonce-text').value='';
+}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('open')}
+
+let parsedProp=null;
+
+function parseAnnonce(){
+  const text=document.getElementById('annonce-text').value.trim();
+  if(!text){alert('Collez le texte d\'une annonce immobilière.');return}
+  document.getElementById('modal-parsing').style.display='block';
+  document.getElementById('modal-btns').innerHTML='';
+  document.getElementById('modal-result').style.display='none';
+
+  // Local IA parsing — extract data from text
+  setTimeout(()=>{
+    parsedProp=extractFromText(text);
+    showParsedResult(parsedProp);
+  },1200);
+}
+
+function extractFromText(text){
+  const t=text.toLowerCase();
+  // Price extraction
+  let price=0;
+  const priceMatch=text.match(/(\d[\d\s]*(?:\.\d{3})*)\s*(?:€|euros?|eur)/i)||text.match(/[Pp]rix\s*:?\s*(\d[\d\s\.]+)/i)||text.match(/(\d{3,}[\s]?\d{3})/);
+  if(priceMatch){price=parseInt(priceMatch[1].replace(/[\s\.]/g,''))||0}
+
+  // Surface
+  let surface=0;
+  const surfMatch=text.match(/(\d+)\s*m[²2]/i)||text.match(/surface[^\d]*(\d+)/i)||text.match(/(\d+)\s*m\s+/i);
+  if(surfMatch)surface=parseInt(surfMatch[1]);
+
+  // Rooms
+  let rooms=0;
+  const roomMatch=text.match(/T(\d)/i)||text.match(/(\d)\s*pi[eè]ces?/i)||text.match(/(\d)\s*chambres?/i);
+  if(roomMatch)rooms=parseInt(roomMatch[1]);
+
+  // City
+  let city='France';
+  const cities=['Paris','Lyon','Marseille','Bordeaux','Toulouse','Nantes','Nice','Strasbourg','Lille','Rennes','Montpellier','Grenoble','Angers','Tours','Dijon'];
+  for(const c of cities){if(t.includes(c.toLowerCase())){city=c;break}}
+  const arrondMatch=text.match(/(\d+)[eè](?:me)?\s*arrondissement/i)||text.match(/Paris\s*(\d+)/i);
+  if(arrondMatch)city=city+' '+arrondMatch[1]+'e';
+
+  // DPE
+  let dpe='C';
+  const dpeMatch=text.match(/DPE\s*:?\s*([A-F])/i)||text.match(/classe\s*([A-F])/i)||text.match(/\b([A-F])\s*(?:DPE|étiquette)/i);
+  if(dpeMatch)dpe=dpeMatch[1].toUpperCase();
+
+  // Type
+  let type='appartement';
+  if(t.includes('maison')||t.includes('villa')||t.includes('pavillon')||t.includes('chalet'))type='maison';
+  else if(t.includes('immeuble')||t.includes('rapport'))type='immeuble';
+  else if(t.includes('local commercial')||t.includes('bureau')||t.includes('commerce')||t.includes('boutique'))type='commercial';
+  else if(t.includes('locatif')||t.includes('studio')||t.includes('meublé'))type='locatif';
+
+  // Rental estimation
+  const rentalMatch=text.match(/loyer[^\d]*(\d[\d\s]*)\s*€/i)||text.match(/(\d[\d\s]*)\s*€\s*\/?\s*mois/i);
+  let rental=rentalMatch?parseInt(rentalMatch[1].replace(/\s/g,'')):Math.round(price*0.004)||800;
+
+  // Estimate works
+  const needsReno=t.includes('rénov')||t.includes('travaux')||t.includes('rafraîch')||t.includes('à rénover');
+  const worksBase=needsReno?Math.round(price*0.1):Math.round(price*0.03);
+
+  // Lat/lng approximation by city
+  const coords={Paris:[48.857,2.347],Lyon:[45.764,4.836],Marseille:[43.296,5.381],Bordeaux:[44.837,-0.579],Toulouse:[43.604,1.444],Nantes:[47.218,-1.553],Nice:[43.710,7.262],Strasbourg:[48.573,7.752],Lille:[50.629,3.057],Rennes:[48.117,-1.677],Montpellier:[43.610,3.876],Grenoble:[45.188,5.724]};
+  const baseCity=cities.find(c=>t.includes(c.toLowerCase()))||'Paris';
+  const [lat,lng]=coords[baseCity]||[46.8+Math.random()*.5,2.3+Math.random()*.5];
+
+  return{
+    id:Date.now(),name:(type.charAt(0).toUpperCase()+type.slice(1))+' '+city,
+    type,city,price:price||300000,surface:surface||60,rooms:rooms||3,
+    lat:lat+(Math.random()-.5)*.02,lng:lng+(Math.random()-.5)*.02,dpe,
+    works:needsReno?[{n:'Rénovation (estimée IA)',c:worksBase},{n:'Mise aux normes',c:Math.round(worksBase*.3)}]:[{n:'Rafraîchissement',c:worksBase}],
+    rental,resale:Math.round((price||300000)*1.12),lr:3.7,ld:20,
+    trend:'+3.0%',market:'Importé',src:'Import',isNew:true,
+    photos:['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600','https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400','https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400']
+  };
+}
+
+function showParsedResult(p){
+  document.getElementById('modal-parsing').style.display='none';
+  document.getElementById('modal-result').style.display='block';
+  document.getElementById('result-grid').innerHTML=`
+    <div class="result-field"><label>Nom du bien</label><input id="rn" value="${p.name}"></div>
+    <div class="result-field"><label>Type</label><input id="rt" value="${p.type}"></div>
+    <div class="result-field"><label>Ville</label><input id="rc" value="${p.city}"></div>
+    <div class="result-field"><label>Prix (€)</label><input id="rp" value="${p.price}" type="number"></div>
+    <div class="result-field"><label>Surface (m²)</label><input id="rs" value="${p.surface}" type="number"></div>
+    <div class="result-field"><label>DPE</label><input id="rd" value="${p.dpe}"></div>
+    <div class="result-field"><label>Loyer estimé (€/m)</label><input id="rl" value="${p.rental}" type="number"></div>
+    <div class="result-field"><label>Score IA</label><input value="${aiScore(p)}/100" readonly style="color:${sc(aiScore(p))};font-weight:800"></div>`;
+  document.getElementById('modal-btns').innerHTML=`
+    <button class="btn-primary" onclick="confirmImport()" style="background:var(--green)">✓ Ajouter à l'app</button>
+    <button class="btn-sec" onclick="openAddModal()">Recommencer</button>
+    <button class="btn-sec" onclick="closeAddModal()">Annuler</button>`;
+}
+
+function confirmImport(){
+  if(!parsedProp)return;
+  parsedProp.name=document.getElementById('rn').value||parsedProp.name;
+  parsedProp.city=document.getElementById('rc').value||parsedProp.city;
+  parsedProp.price=parseInt(document.getElementById('rp').value)||parsedProp.price;
+  parsedProp.surface=parseInt(document.getElementById('rs').value)||parsedProp.surface;
+  parsedProp.dpe=document.getElementById('rd').value||parsedProp.dpe;
+  parsedProp.rental=parseInt(document.getElementById('rl').value)||parsedProp.rental;
+  PROPS.unshift(parsedProp);
+  closeAddModal();
+  renderList();
+  placeMarkers();
+  selectProp(parsedProp.id);
+  parsedProp=null;
+}
+
+// ═══════════════════════
+// CONTROLS
+// ═══════════════════════
+function setF(f,btn){
+  curF=f;
+  document.querySelectorAll('.tb-btn,.s-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // Sync both filter sets
+  document.querySelectorAll('.tb-btn').forEach(b=>{if(b.textContent.toLowerCase().includes(f)||f==='all'&&b.textContent==='Tous')b.classList.add('active')});
+  document.querySelectorAll('.s-filter').forEach(b=>{if(b.textContent.toLowerCase().includes(f)||f==='all'&&b.textContent==='Tous'){b.classList.add('active');if(f!=='all')b.style.background=COL[f]||'var(--text2)',b.style.color='#fff';else b.style.background='var(--text2)',b.style.color='#fff';}else{b.style.background='';b.style.color=''}});
+  renderList();placeMarkers();fitAll();
+}
+function setSort(s,btn){
+  sortBy=s;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+function doSearch(v){searchQ=v.toLowerCase();renderList();placeMarkers();}
+function openSV(lat,lng){window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`,'_blank')}
+
+// ═══════════════════════
+// INIT
+// ═══════════════════════
+initMap();
+loadRealData();
+renderList();
+
+// Sync sidebar filter colors on init
+document.querySelectorAll('.s-filter').forEach((b,i)=>{
+  const types=['all','locatif','maison','immeuble','appartement','commercial'];
+  if(i===0){b.style.background='var(--text2)';b.style.color='#fff';}
+  b.onclick=function(){setF(types[i],this)};
+});
+</script>
+</body>
+</html>
