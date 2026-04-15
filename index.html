@@ -1259,21 +1259,15 @@ function printRapport() {
 }
 
 // ═══════════════════════════
-// V4 — OVERRIDE renderAll pour inclure filtre région
-// ═══════════════════════════
-const _origRenderAll_v3 = window.renderAll;
-window.renderAll = function() {
-  // Apply region filter on top of existing filters
-  const originalProps = PROPS;
+// V4 — région : on patch getFiltered à la place
+const _origGetFiltered_v4 = window.getFiltered;
+window.getFiltered = function() {
+  let list = typeof _origGetFiltered_v4 === 'function' ? _origGetFiltered_v4() : PROPS;
   if (currentRegion !== 'all') {
     const regionCities = REGION_MAP[currentRegion] || [];
-    const filtered = PROPS.filter(p => regionCities.some(c => (p.city||'').toLowerCase().includes(c.toLowerCase())));
-    PROPS = filtered;
-    if (typeof _origRenderAll_v3 === 'function') _origRenderAll_v3();
-    PROPS = originalProps;
-  } else {
-    if (typeof _origRenderAll_v3 === 'function') _origRenderAll_v3();
+    list = list.filter(p => regionCities.some(c => (p.city||'').toLowerCase().includes(c.toLowerCase())));
   }
+  return list;
 };
 
 
