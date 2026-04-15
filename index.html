@@ -408,6 +408,13 @@ const SCRAPED_DATA = [{"id": 2536874521, "name": "ANNONCES À LA UNE !", "type
 const SCRAPER_URL = "http://localhost:8765/immointel-data.json";
 
 async function loadRealData() {
+  try {
+    const scraped = SCRAPED_DATA;
+    const banner = document.getElementById("data-banner");
+    PROPS = [...scraped, ...BASE_PROPS.filter(b => !scraped.find(s => s.id === b.id))];
+    renderList(); placeMarkers();
+    return;
+  } catch(e) {}
   const banner = document.getElementById("data-banner");
   try {
     const res = await fetch(SCRAPER_URL, { cache: "no-cache" });
