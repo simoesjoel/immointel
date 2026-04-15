@@ -205,32 +205,20 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
 .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 
 
-/* ── REGION FILTER ── */
 .region-sel{font-size:11px;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--bg3);color:var(--text);cursor:pointer;font-weight:500;height:28px}
 .region-sel:focus{outline:none;border-color:var(--blue)}
-
-/* ── REFRESH BUTTON ── */
 .tb-btn.refresh{background:var(--teal-l);color:var(--teal);border-color:rgba(13,122,106,.25);display:flex;align-items:center;gap:5px}
 .tb-btn.refresh:hover{background:var(--teal);color:#fff}
 .tb-btn.refresh.spin svg{animation:spin .8s linear infinite}
-
-/* ── URL INPUT MODAL ── */
 .url-input{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text);outline:none;margin-bottom:8px}
 .url-input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,111,212,.1)}
 .import-tabs{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
 .import-tab{flex:1;padding:8px;font-size:12px;font-weight:600;background:transparent;border:none;cursor:pointer;color:var(--text2);transition:all .15s}
 .import-tab.active{background:var(--blue);color:#fff}
-
-/* ── RAPPORT BANQUIER ── */
 .rapport-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--purple);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s}
-.rapport-btn:hover{background:#5230a0;box-shadow:0 2px 8px rgba(99,64,160,.4)}
-.rapport-btn svg{flex-shrink:0}
-
-/* ── LIEN ANNONCE ── */
+.rapport-btn:hover{background:#5230a0}
 .annonce-link{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--blue);font-weight:600;text-decoration:none;padding:4px 10px;background:var(--blue-l);border-radius:5px;margin-top:6px;transition:all .15s}
 .annonce-link:hover{background:var(--blue);color:#fff}
-
-/* ── PDF MODAL ── */
 #pdf-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center}
 #pdf-modal.open{display:flex}
 .pdf-box{background:#fff;border-radius:14px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -283,7 +271,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
     <button class="tb-btn" onclick="setF('appartement',this)">Appartement</button>
     <button class="tb-btn" onclick="setF('commercial',this)">Commercial</button>
     <div class="tb-sep"></div>
-    <select class="region-sel" id="region-sel" onchange="setRegion(this.value)" title="Filtrer par région">
+    <select class="region-sel" id="region-sel" onchange="setRegion(this.value)">
       <option value="all">🇫🇷 Toute la France</option>
       <option value="idf">🏙️ Île-de-France</option>
       <option value="aura">🏔️ Auvergne-Rhône-Alpes</option>
@@ -292,11 +280,10 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
       <option value="nouvelle-aquitaine">🍷 Nouvelle-Aquitaine</option>
       <option value="bretagne">⚓ Bretagne</option>
       <option value="pdl">🦁 Pays de la Loire</option>
-      <option value="normandie">🏖️ Normandie</option>
       <option value="grand-est">🗺️ Grand Est</option>
       <option value="hdf">🏭 Hauts-de-France</option>
     </select>
-    <button class="tb-btn refresh" id="refresh-btn" onclick="refreshData()" title="Actualiser les données">
+    <button class="tb-btn refresh" id="refresh-btn" onclick="refreshData()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       Actualiser
     </button>
@@ -331,7 +318,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
     <span class="sort-lbl">Trier</span>
     <button class="sort-btn active" onclick="setSort('score',this)">Score IA</button>
     <button class="sort-btn" onclick="setSort('price',this)">Prix</button>
-    <button class="sort-btn" onclick="setSort('yield',this)">💰 Revenus & Rentabilité</button>
+    <button class="sort-btn" onclick="setSort('yield',this)">💰 Revenus &amp; Rentabilité</button>
     <button class="sort-btn" onclick="setSort('cf',this)">Cash-flow</button>
   </div>
   <div class="legend-strip">
@@ -379,7 +366,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
       <button class="import-tab" id="tab-url" onclick="switchImportTab('url')">🔗 Importer par URL</button>
     </div>
     <div id="import-text-mode">
-    <div class="modal-sub">Copiez-collez le texte complet d'une annonce immobilière. L'IA extrait et analyse automatiquement toutes les données.</div>
+    <div class="modal-sub">Copiez-collez le texte complet d'une annonce. L'IA extrait et analyse automatiquement toutes les données.</div>
     <div class="modal-sites">
       <span style="font-size:10px;color:var(--text3);font-weight:600;align-self:center">Compatible :</span>
       <span class="site-chip">SeLoger</span>
@@ -400,11 +387,10 @@ Charges : 280€/mois
 DPE : C
 Au 3ème étage d'un immeuble Haussmannien, bel appartement de 68m² comprenant entrée, salon-séjour, 2 chambres, cuisine équipée, salle de bain. Parquet, double vitrage. Proche métro.
 Loyer estimé : 1 800€/mois"></textarea>
-    </div><!-- /import-text-mode -->
+    </div>
     <div id="import-url-mode" style="display:none">
-      <div class="modal-sub">Collez directement le lien de l'annonce. L'IA récupère et analyse automatiquement le contenu de la page.</div>
-      <input type="url" class="url-input" id="annonce-url" placeholder="https://www.seloger.com/annonces/achat/..." />
-      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Compatible : SeLoger, BienIci, LeBonCoin, PAP, Logic-Immo, Orpi, MeilleursAgents...</div>
+      <div class="modal-sub">Collez le lien de l'annonce. L'IA analyse automatiquement la page.</div>
+      <input type="url" class="url-input" id="annonce-url" placeholder="https://www.seloger.com/annonces/..."/>
     </div>
     <div id="modal-parsing" class="modal-parsing">
       <div class="parse-spinner"></div>
@@ -676,7 +662,7 @@ function renderDetail(){
     <div class="d-tabs">
       <div class="d-tab active" onclick="showTab('overview',this)">Vue d'ensemble</div>
       <div class="d-tab" onclick="showTab('finance',this)">Financement</div>
-      <div class="d-tab" onclick="showTab('yield',this)">💰 Revenus & Rentabilité</div>
+      <div class="d-tab" onclick="showTab('yield',this)">💰 Revenus &amp; Rentabilité</div>
       <div class="d-tab" onclick="showTab('resale',this)">📈 Revendre ce bien</div>
     </div>
   </div>
@@ -1066,244 +1052,172 @@ document.querySelectorAll('.s-filter').forEach((b,i)=>{
   b.onclick=function(){setF(types[i],this)};
 });
 
-// ═══════════════════════════
-// V4 — REGION FILTER
-// ═══════════════════════════
-const REGION_MAP = {
-  'idf': ['Paris','Paris 5e','Paris 8e','Paris 11e','Paris 16e','Boulogne','Vincennes','Versailles','Saint-Denis','Montreuil','Créteil','Nanterre','Levallois','Neuilly','Issy'],
-  'aura': ['Lyon','Lyon 2e','Lyon 3e','Lyon 6e','Grenoble','Clermont-Ferrand','Annecy','Chambéry','Valence'],
-  'paca': ['Marseille','Marseille 7e','Nice','Aix-en-Provence','Toulon','Avignon','Cannes','Antibes'],
-  'occitanie': ['Toulouse','Montpellier','Nîmes','Perpignan','Montauban'],
-  'nouvelle-aquitaine': ['Bordeaux','Bayonne','Pau','Limoges','Poitiers','La Rochelle'],
-  'bretagne': ['Rennes','Brest','Lorient','Quimper','Vannes'],
-  'pdl': ['Nantes','Angers','Le Mans','La Roche-sur-Yon','Saint-Nazaire'],
-  'normandie': ['Rouen','Caen','Le Havre','Cherbourg'],
-  'grand-est': ['Strasbourg','Reims','Metz','Nancy','Mulhouse'],
-  'hdf': ['Lille','Amiens','Roubaix','Tourcoing','Douai'],
-};
+// ══════════════════════════════
+// IMMOINTEL V4 — NOUVELLES FONCTIONS
+// ══════════════════════════════
 
+// — Région —
+const REGION_MAP = {
+  idf: ['Paris','Boulogne','Vincennes','Versailles','Saint-Denis','Montreuil','Nanterre','Levallois','Neuilly','Issy','Créteil'],
+  aura: ['Lyon','Grenoble','Clermont-Ferrand','Annecy','Chambéry','Valence'],
+  paca: ['Marseille','Nice','Aix-en-Provence','Toulon','Avignon','Cannes','Antibes'],
+  occitanie: ['Toulouse','Montpellier','Nîmes','Perpignan'],
+  'nouvelle-aquitaine': ['Bordeaux','Bayonne','La Rochelle','Limoges','Poitiers'],
+  bretagne: ['Rennes','Brest','Lorient','Quimper','Vannes'],
+  pdl: ['Nantes','Angers','Le Mans','Saint-Nazaire'],
+  'grand-est': ['Strasbourg','Reims','Metz','Nancy','Mulhouse'],
+  hdf: ['Lille','Amiens','Roubaix','Tourcoing'],
+};
 let currentRegion = 'all';
 
 function setRegion(val) {
   currentRegion = val;
-  renderAll();
-  updateMapStats();
+  // Re-appliquer le tri/filtre actif
+  if (typeof renderList === 'function') renderList();
+  if (typeof renderMap  === 'function') renderMap();
+  if (typeof updateMapStats === 'function') updateMapStats();
+  // Fallback : si renderList n'existe pas, forcer un re-render complet
+  if (typeof renderAll === 'function') renderAll();
 }
 
-function matchesRegion(prop) {
+function regionMatches(p) {
   if (currentRegion === 'all') return true;
   const cities = REGION_MAP[currentRegion] || [];
-  return cities.some(c => (prop.city || '').toLowerCase().includes(c.toLowerCase()));
+  return cities.some(c => (p.city || '').toLowerCase().includes(c.toLowerCase()));
 }
 
-// Override getFiltered to include region
-const _origGetFiltered = window.getFiltered;
+// Patch getFiltered pour inclure le filtre région
+(function patchGetFiltered() {
+  const _orig = window.getFiltered;
+  if (typeof _orig !== 'function') {
+    // Si getFiltered n'existe pas encore, on crée un wrapper post-init
+    window.addEventListener('load', patchGetFiltered);
+    return;
+  }
+  window.getFiltered = function() {
+    return _orig().filter(regionMatches);
+  };
+  console.log('[V4] getFiltered patché ✓');
+})();
 
-// ═══════════════════════════
-// V4 — REFRESH BUTTON
-// ═══════════════════════════
+// — Actualiser —
 function refreshData() {
   const btn = document.getElementById('refresh-btn');
-  btn.classList.add('spin');
-  btn.style.pointerEvents = 'none';
-  
-  // Simulate a refresh animation (in real app would fetch new data)
+  if (btn) { btn.classList.add('spin'); btn.style.pointerEvents = 'none'; }
   setTimeout(() => {
-    btn.classList.remove('spin');
-    btn.style.pointerEvents = '';
-    
-    // Re-render everything
-    PROPS = [...BASE_PROPS, ...SCRAPED_DATA.map(p => ({...p, isNew: true}))];
-    renderAll();
-    renderMap();
-    updateMapStats();
-    
-    // Show success feedback
-    const badge = document.getElementById('cnt-badge');
-    const old = badge.textContent;
-    badge.textContent = '✓ Données actualisées';
-    badge.style.color = 'var(--green)';
-    badge.style.background = 'var(--green-l)';
-    setTimeout(() => {
-      badge.textContent = old;
-      badge.style.color = '';
-      badge.style.background = '';
-    }, 2000);
-  }, 1200);
-}
-
-// ═══════════════════════════
-// V4 — IMPORT URL / TEXT TAB
-// ═══════════════════════════
-function switchImportTab(mode) {
-  document.getElementById('tab-text').classList.toggle('active', mode === 'text');
-  document.getElementById('tab-url').classList.toggle('active', mode === 'url');
-  document.getElementById('import-text-mode').style.display = mode === 'text' ? '' : 'none';
-  document.getElementById('import-url-mode').style.display = mode === 'url' ? '' : 'none';
-}
-
-// Patch parseAnnonce to handle URL mode
-const _origParseAnnonce = window.parseAnnonce;
-window.parseAnnonceV4 = async function() {
-  const urlMode = document.getElementById('tab-url') && document.getElementById('tab-url').classList.contains('active');
-  if (urlMode) {
-    const url = document.getElementById('annonce-url').value.trim();
-    if (!url || !url.startsWith('http')) {
-      alert('Veuillez saisir une URL valide commençant par http...');
-      return;
+    if (btn) { btn.classList.remove('spin'); btn.style.pointerEvents = ''; }
+    // Recharger les données de base
+    if (typeof BASE_PROPS !== 'undefined' && typeof SCRAPED_DATA !== 'undefined') {
+      PROPS = [...BASE_PROPS, ...SCRAPED_DATA];
     }
-    // Inject URL into text area and call original parse
-    document.getElementById('annonce-text').value = 
-      'URL de l\'annonce : ' + url + '\n\nVeuillez analyser cette annonce immobilière à partir de son URL.';
-  }
-  // Call original parse
-  if (typeof parseAnnonce === 'function') parseAnnonce();
-};
-
-// ═══════════════════════════
-// V4 — LIEN ANNONCE dans fiche
-// ═══════════════════════════
-function getAnnonceLink(p) {
-  if (!p.url) return '';
-  return '<a href="' + p.url + '" target="_blank" class="annonce-link">' +
-    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
-    'Voir l\'annonce originale' +
-    '</a>';
+    if (typeof renderAll === 'function') renderAll();
+    if (typeof renderMap === 'function') renderMap();
+    const badge = document.getElementById('cnt-badge');
+    if (badge) {
+      const old = badge.textContent;
+      badge.textContent = '✓ Actualisé !';
+      badge.style.color = 'var(--green)';
+      badge.style.background = 'var(--green-l)';
+      setTimeout(() => { badge.textContent = old; badge.style.color=''; badge.style.background=''; }, 2000);
+    }
+  }, 1000);
 }
 
-// ═══════════════════════════
-// V4 — RAPPORT BANQUIER
-// ═══════════════════════════
-function openRapportBanquier(prop) {
-  const p = prop || SEL;
-  if (!p) return;
-
-  const totalWorks = (p.works || []).reduce((s, w) => s + (w.c || 0), 0);
-  const totalInvest = p.price + totalWorks;
-  const mensualite = (totalInvest * 0.7 * 0.004).toFixed(0); // 70% financement, ~4% taux
-  const cashflow = ((p.rental || 0) - mensualite).toFixed(0);
-  const rendBrut = ((p.rental * 12 / p.price) * 100).toFixed(2);
-  const rendNet = (rendBrut * 0.75).toFixed(2);
-  const plusValue = (p.resale - totalInvest).toLocaleString('fr-FR');
-  const roi = (((p.resale - totalInvest) / totalInvest) * 100).toFixed(1);
-
-  const today = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
-  
-  const content = \`
-  <div style="font-size:13px;color:var(--text2);margin-bottom:16px">
-    Document généré le <strong style="color:var(--text)">\${today}</strong> — 
-    Projet d'investissement immobilier
-  </div>
-
-  <div class="pdf-section">
-    <div class="pdf-section-title">🏠 Le bien</div>
-    <div class="pdf-row"><span class="pdf-lbl">Désignation</span><span class="pdf-val">\${p.name}</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Localisation</span><span class="pdf-val">\${p.city}</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Type</span><span class="pdf-val">\${p.type.charAt(0).toUpperCase()+p.type.slice(1)}</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Surface</span><span class="pdf-val">\${p.surface} m²</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Nombre de pièces</span><span class="pdf-val">\${p.rooms} pièces</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">DPE</span><span class="pdf-val">Classe \${p.dpe}</span></div>
-    \${p.url ? '<div class="pdf-row"><span class="pdf-lbl">Lien annonce</span><span class="pdf-val" style="font-size:10px;color:var(--blue)">' + p.url.substring(0,60) + '...</span></div>' : ''}
-  </div>
-
-  <div class="pdf-section">
-    <div class="pdf-section-title">💶 Plan de financement</div>
-    <div class="pdf-row"><span class="pdf-lbl">Prix d'acquisition</span><span class="pdf-val">\${p.price.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Budget travaux estimé</span><span class="pdf-val">\${totalWorks.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl"><strong>Coût total de l'opération</strong></span><span class="pdf-val" style="color:var(--blue);font-size:13px"><strong>\${totalInvest.toLocaleString('fr-FR')} €</strong></span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Apport personnel estimé (30%)</span><span class="pdf-val">\${Math.round(totalInvest*0.3).toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Montant demandé (70%)</span><span class="pdf-val">\${Math.round(totalInvest*0.7).toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Mensualité estimée (taux 4%, 20 ans)</span><span class="pdf-val">\${Number(mensualite).toLocaleString('fr-FR')} €/mois</span></div>
-  </div>
-
-  <div class="pdf-section">
-    <div class="pdf-section-title">💰 Analyse de rentabilité</div>
-    <div class="pdf-row"><span class="pdf-lbl">Loyer mensuel estimé</span><span class="pdf-val" style="color:var(--green)">\${(p.rental||0).toLocaleString('fr-FR')} €/mois</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Loyers annuels</span><span class="pdf-val">\${((p.rental||0)*12).toLocaleString('fr-FR')} €/an</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Rendement brut</span><span class="pdf-val">\${rendBrut} %</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Rendement net estimé (charges ~25%)</span><span class="pdf-val" style="color:var(--green)">\${rendNet} %</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Cash-flow mensuel estimé</span><span class="pdf-val" style="color:\${cashflow>=0?'var(--green)':'var(--red)'}">\${Number(cashflow)>=0?'+':''}\${Number(cashflow).toLocaleString('fr-FR')} €/mois</span></div>
-  </div>
-
-  <div class="pdf-section">
-    <div class="pdf-section-title">📈 Perspective de revente (horizon \${p.ld || 20} ans)</div>
-    <div class="pdf-row"><span class="pdf-lbl">Valeur de revente estimée</span><span class="pdf-val">\${(p.resale||0).toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Plus-value potentielle</span><span class="pdf-val" style="color:var(--green)">+\${plusValue} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">ROI global estimé</span><span class="pdf-val" style="color:var(--blue)">+\${roi} %</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Tendance marché actuelle</span><span class="pdf-val">\${p.trend || 'N/A'} / an</span></div>
-  </div>
-
-  \${totalWorks > 0 ? \`
-  <div class="pdf-section">
-    <div class="pdf-section-title">🔨 Travaux prévus</div>
-    \${(p.works||[]).map(w => '<div class="pdf-row"><span class="pdf-lbl">'+w.n+'</span><span class="pdf-val">'+w.c.toLocaleString('fr-FR')+' €</span></div>').join('')}
-  </div>\` : ''}
-
-  <div style="margin-top:16px;padding:12px;background:var(--amber-l);border-radius:8px;border:1px solid rgba(138,95,0,.2);font-size:11px;color:var(--amber);line-height:1.5">
-    <strong>⚠️ Avertissement :</strong> Ce document est généré à titre indicatif par ImmoIntel. 
-    Les chiffres présentés sont des estimations basées sur les données disponibles. 
-    Ils ne constituent pas un engagement financier et doivent être validés par un professionnel.
-  </div>
-  \`;
-
-  document.getElementById('pdf-content').innerHTML = content;
-  document.getElementById('pdf-modal').classList.add('open');
+// — Import tabs —
+function switchImportTab(mode) {
+  document.getElementById('tab-text').classList.toggle('active', mode==='text');
+  document.getElementById('tab-url').classList.toggle('active',  mode==='url');
+  document.getElementById('import-text-mode').style.display = mode==='text' ? '' : 'none';
+  document.getElementById('import-url-mode').style.display  = mode==='url'  ? '' : 'none';
 }
 
+// — PDF modal —
 function closePdfModal() {
   document.getElementById('pdf-modal').classList.remove('open');
 }
 
-function printRapport() {
-  window.print();
+function openRapportBanquier(p) {
+  if (!p) p = window.SEL;
+  if (!p) return alert('Sélectionnez d\'abord un bien.');
+  const works  = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
+  const total  = p.price + works;
+  const emprun = Math.round(total * 0.7);
+  const mensua = Math.round(emprun * 0.004 * Math.pow(1.004,240) / (Math.pow(1.004,240)-1));
+  const cf     = (p.rental||0) - mensua;
+  const rBrut  = ((p.rental*12/p.price)*100).toFixed(2);
+  const rNet   = (rBrut*0.75).toFixed(2);
+  const pv     = ((p.resale||p.price) - total);
+  const roi    = ((pv/total)*100).toFixed(1);
+  const today  = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+
+  document.getElementById('pdf-content').innerHTML = `
+  <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Généré le <b>${today}</b></p>
+  <div class="pdf-section">
+    <div class="pdf-section-title">🏠 Le bien</div>
+    <div class="pdf-row"><span class="pdf-lbl">Désignation</span><span class="pdf-val">${p.name}</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Localisation</span><span class="pdf-val">${p.city}</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Surface</span><span class="pdf-val">${p.surface} m²  —  ${p.rooms} pièces</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">DPE</span><span class="pdf-val">Classe ${p.dpe}</span></div>
+    ${p.url?`<div class="pdf-row"><span class="pdf-lbl">Annonce</span><span class="pdf-val" style="font-size:10px;color:var(--blue)">${p.url.substring(0,55)}…</span></div>`:''}
+  </div>
+  <div class="pdf-section">
+    <div class="pdf-section-title">💶 Plan de financement</div>
+    <div class="pdf-row"><span class="pdf-lbl">Prix d'acquisition</span><span class="pdf-val">${p.price.toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Travaux estimés</span><span class="pdf-val">${works.toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl"><b>Coût total</b></span><span class="pdf-val" style="color:var(--blue);font-weight:800">${total.toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Apport (30 %)</span><span class="pdf-val">${Math.round(total*0.3).toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Emprunt (70 %)</span><span class="pdf-val">${emprun.toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Mensualité estimée (4 %, 20 ans)</span><span class="pdf-val">${mensua.toLocaleString('fr-FR')} €/mois</span></div>
+  </div>
+  <div class="pdf-section">
+    <div class="pdf-section-title">💰 Rentabilité</div>
+    <div class="pdf-row"><span class="pdf-lbl">Loyer mensuel estimé</span><span class="pdf-val" style="color:var(--green)">${(p.rental||0).toLocaleString('fr-FR')} €/mois</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Rendement brut</span><span class="pdf-val">${rBrut} %</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Rendement net estimé</span><span class="pdf-val" style="color:var(--green)">${rNet} %</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Cash-flow mensuel</span><span class="pdf-val" style="color:${cf>=0?'var(--green)':'var(--red)'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €/mois</span></div>
+  </div>
+  <div class="pdf-section">
+    <div class="pdf-section-title">📈 Revente (horizon ${p.ld||20} ans)</div>
+    <div class="pdf-row"><span class="pdf-lbl">Valeur de revente estimée</span><span class="pdf-val">${(p.resale||0).toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">Plus-value potentielle</span><span class="pdf-val" style="color:var(--green)">+${pv.toLocaleString('fr-FR')} €</span></div>
+    <div class="pdf-row"><span class="pdf-lbl">ROI global estimé</span><span class="pdf-val" style="color:var(--blue)">+${roi} %</span></div>
+  </div>
+  ${works>0?`<div class="pdf-section"><div class="pdf-section-title">🔨 Travaux</div>${(p.works||[]).map(w=>`<div class="pdf-row"><span class="pdf-lbl">${w.n}</span><span class="pdf-val">${w.c.toLocaleString('fr-FR')} €</span></div>`).join('')}</div>`:''}
+  <div style="margin-top:14px;padding:10px;background:var(--amber-l);border-radius:7px;font-size:11px;color:var(--amber);line-height:1.5">
+    <b>⚠️ Avertissement :</b> Estimations indicatives générées par ImmoIntel. À valider avec un professionnel.
+  </div>`;
+
+  document.getElementById('pdf-modal').classList.add('open');
 }
 
-// ═══════════════════════════
-// V4 — région : on patch getFiltered à la place
-const _origGetFiltered_v4 = window.getFiltered;
-window.getFiltered = function() {
-  let list = typeof _origGetFiltered_v4 === 'function' ? _origGetFiltered_v4() : PROPS;
-  if (currentRegion !== 'all') {
-    const regionCities = REGION_MAP[currentRegion] || [];
-    list = list.filter(p => regionCities.some(c => (p.city||'').toLowerCase().includes(c.toLowerCase())));
-  }
-  return list;
-};
-
-
-// V4 — Hook sur showProp pour ajouter lien + rapport
-const _origShowProp = window.showProp || window.selectProp;
-function addV4Elements(p) {
-  // Add lien annonce to photo section
+// — Lien annonce + bouton rapport dans la fiche —
+function injectV4DetailButtons(p) {
   setTimeout(() => {
-    const photoSecs = document.querySelectorAll('.d-sec');
-    if (photoSecs.length > 0) {
-      const sec = photoSecs[0];
-      if (p.url && !sec.querySelector('.annonce-link')) {
-        const link = document.createElement('a');
-        link.href = p.url;
-        link.target = '_blank';
-        link.className = 'annonce-link';
-        link.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Voir l\'annonce originale';
-        sec.appendChild(link);
-      }
-      // Add rapport btn
-      if (!sec.querySelector('.rapport-btn')) {
-        const btn = document.createElement('button');
-        btn.className = 'rapport-btn';
-        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Dossier Banquier';
-        btn.onclick = () => openRapportBanquier(p);
-        sec.appendChild(btn);
-      }
+    const secs = document.querySelectorAll('.d-sec');
+    if (!secs.length) return;
+    const sec = secs[0];
+    // Lien annonce
+    if (p && p.url && !sec.querySelector('.annonce-link')) {
+      const a = document.createElement('a');
+      a.href = p.url; a.target = '_blank'; a.className = 'annonce-link';
+      a.innerHTML = '🔗 Voir l\'annonce originale';
+      sec.appendChild(a);
     }
-  }, 100);
+    // Bouton dossier banquier
+    if (!sec.querySelector('.rapport-btn')) {
+      const btn = document.createElement('button');
+      btn.className = 'rapport-btn';
+      btn.innerHTML = '📋 Dossier Banquier';
+      btn.onclick = () => openRapportBanquier(p);
+      sec.appendChild(btn);
+    }
+  }, 120);
 }
 
-console.log('[ImmoIntel V4] Patches chargés ✓');
+console.log('[ImmoIntel V4] chargé ✓');
 
 </script>
 
-<!-- ══ PDF RAPPORT BANQUIER MODAL ══ -->
 <div id="pdf-modal">
   <div class="pdf-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
@@ -1315,14 +1229,10 @@ console.log('[ImmoIntel V4] Patches chargés ✓');
     </div>
     <div id="pdf-content"></div>
     <div style="display:flex;gap:8px;margin-top:16px">
-      <button class="btn-primary" onclick="printRapport()" style="display:flex;align-items:center;gap:6px;justify-content:center">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Imprimer / Enregistrer en PDF
-      </button>
+      <button class="btn-primary" onclick="window.print()" style="display:flex;align-items:center;gap:6px;justify-content:center">🖨️ Imprimer / PDF</button>
       <button class="btn-sec" onclick="closePdfModal()">Fermer</button>
     </div>
   </div>
 </div>
-
 </body>
 </html>
