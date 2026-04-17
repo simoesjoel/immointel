@@ -1089,7 +1089,10 @@ function refreshData() {
   if (btn) { btn.classList.add('spin'); btn.style.pointerEvents='none'; }
   setTimeout(() => {
     if (btn) { btn.classList.remove('spin'); btn.style.pointerEvents=''; }
-    PROPS = [...BASE_PROPS, ...SCRAPED_DATA];
+    // Conserver les biens existants — ne pas écraser si SCRAPED_DATA est vide
+    const scraped = (typeof SCRAPED_DATA !== 'undefined' && SCRAPED_DATA.length > 0) ? SCRAPED_DATA : [];
+    PROPS = [...BASE_PROPS, ...scraped];
+    if (PROPS.length === 0) PROPS = [...BASE_PROPS];
     if (typeof renderAll==='function') renderAll();
     if (typeof renderMap==='function') renderMap();
     const badge = document.getElementById('cnt-badge');
