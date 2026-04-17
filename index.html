@@ -220,41 +220,35 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
 .annonce-link:hover{background:var(--blue);color:#fff}
 #pdf-modal,#palantir-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center}
 #pdf-modal.open,#palantir-modal.open{display:flex}
-.pdf-box{background:#fff;border-radius:14px;padding:28px;width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
-.pal-box{background:#0d1117;border-radius:14px;padding:0;width:95vw;max-width:1200px;max-height:92vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column}
-.pal-header{padding:16px 20px;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:12px;background:#161b22}
+.pdf-box{background:#fff;border-radius:14px;padding:24px;width:700px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.pal-box{background:#0d1117;border-radius:14px;width:96vw;max-width:1300px;max-height:92vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);display:flex;flex-direction:column}
+.pal-header{padding:14px 20px;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:12px;background:#161b22;flex-shrink:0}
 .pal-title{font-size:15px;font-weight:800;color:#e6edf3;flex:1}
-.pal-tabs{display:flex;gap:2px}
-.pal-tab{padding:6px 14px;font-size:11px;font-weight:600;background:transparent;border:1px solid transparent;border-radius:6px;cursor:pointer;color:#8b949e;transition:all .15s}
+.pal-tabs{display:flex;gap:4px}
+.pal-tab{padding:5px 13px;font-size:11px;font-weight:600;background:transparent;border:1px solid transparent;border-radius:6px;cursor:pointer;color:#8b949e;transition:all .15s}
 .pal-tab:hover{background:#21262d;color:#e6edf3}
 .pal-tab.active{background:#1f6feb;color:#fff;border-color:#1f6feb}
-.pal-content{flex:1;overflow-y:auto;padding:20px;background:#0d1117}
-.pal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.pal-kpi{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px 16px}
-.pal-kpi-val{font-size:22px;font-weight:800;color:#58a6ff;line-height:1}
-.pal-kpi-lbl{font-size:10px;color:#8b949e;margin-top:4px;font-weight:500;text-transform:uppercase}
-.pal-kpi-sub{font-size:11px;color:#3fb950;margin-top:3px;font-weight:600}
-.pal-section{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px;margin-bottom:14px}
-.pal-section-title{font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.pal-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
-.pal-bar-lbl{width:120px;color:#8b949e;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pal-bar-bg{flex:1;height:18px;background:#21262d;border-radius:4px;overflow:hidden;position:relative}
-.pal-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:#fff}
+.pal-content{flex:1;overflow-y:auto;padding:16px;background:#0d1117}
+.pal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.pal-kpi{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:12px 14px}
+.pal-kpi-val{font-size:20px;font-weight:800;color:#58a6ff;line-height:1}
+.pal-kpi-lbl{font-size:10px;color:#8b949e;margin-top:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.pal-kpi-sub{font-size:10px;color:#3fb950;margin-top:2px;font-weight:600}
+.pal-section{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px;margin-bottom:12px}
+.pal-section-title{font-size:10px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.pal-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px}
+.pal-bar-lbl{width:110px;color:#8b949e;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal-bar-bg{flex:1;height:16px;background:#21262d;border-radius:3px;overflow:hidden}
+.pal-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:#fff;transition:width .6s}
 .pal-table{width:100%;border-collapse:collapse;font-size:11px}
-.pal-table th{padding:8px 10px;text-align:left;color:#8b949e;font-weight:600;border-bottom:1px solid #21262d;text-transform:uppercase;font-size:10px}
-.pal-table td{padding:7px 10px;color:#e6edf3;border-bottom:1px solid #161b22}
-.pal-table tr:hover td{background:#1c2128}
-.pal-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
-.pal-chart-row{display:flex;gap:14px;margin-bottom:14px}
-.pal-chart-half{flex:1;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px}
-.pdf-section{margin:12px 0;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)}
-.pdf-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.pdf-row{display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.pal-table th{padding:7px 10px;text-align:left;color:#8b949e;font-weight:600;border-bottom:1px solid #21262d;text-transform:uppercase;font-size:10px}
+.pal-table td{padding:6px 10px;color:#e6edf3;border-bottom:1px solid #161b22}
+.pal-table tr:hover td{background:#1c2128;cursor:pointer}
+.pal-btn{background:#1f6feb;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer}
+.pdf-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:10pt}
 .pdf-row:last-child{border-bottom:none}
-.pdf-lbl{color:var(--text2)}
-.pdf-val{font-weight:600;color:var(--text)}
 @media print{body>*:not(#print-rapport){display:none!important}#print-rapport{display:block!important}#pdf-modal,#palantir-modal{display:none!important}}
-#print-rapport{display:none;font-family:-apple-system,'Segoe UI',sans-serif;color:#1a1f2e;max-width:210mm;margin:0 auto;padding:20mm;font-size:11pt}
+#print-rapport{display:none;font-family:-apple-system,sans-serif;color:#1a1f2e;padding:20mm;font-size:11pt}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -311,7 +305,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
       <option value="hdf">🏭 Hauts-de-France</option>
     </select>
     <button class="tb-btn palantir" onclick="openPalantir()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg>
       Analyse IA
     </button>
     <button class="tb-btn refresh" id="refresh-btn" onclick="refreshData()">
@@ -396,7 +390,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
       <button class="import-tab" id="tab-url" onclick="switchImportTab('url')">🔗 Importer par URL</button>
     </div>
     <div id="import-text-mode">
-    <div class="modal-sub">Copiez-collez le texte complet d'une annonce. L'IA extrait et analyse automatiquement toutes les données.</div>
+    <div class="modal-sub">Copiez-collez le texte d'une annonce. L'IA analyse automatiquement.</div>
     <div class="modal-sites">
       <span style="font-size:10px;color:var(--text3);font-weight:600;align-self:center">Compatible :</span>
       <span class="site-chip">SeLoger</span>
@@ -419,7 +413,7 @@ Au 3ème étage d'un immeuble Haussmannien, bel appartement de 68m² comprenant 
 Loyer estimé : 1 800€/mois"></textarea>
     </div>
     <div id="import-url-mode" style="display:none">
-      <div class="modal-sub">Collez le lien de l'annonce.</div>
+      <div class="modal-sub">Collez le lien de l'annonce. L'IA analyse automatiquement.</div>
       <input type="url" class="url-input" id="annonce-url" placeholder="https://www.seloger.com/annonces/..."/>
     </div>
     <div id="modal-parsing" class="modal-parsing">
@@ -1083,435 +1077,339 @@ document.querySelectorAll('.s-filter').forEach((b,i)=>{
   b.onclick=function(){setF(types[i],this)};
 });
 
-// ══════════════════════════════
-// IMMOINTEL V4 — JS COMPLET
-// ══════════════════════════════
+// ═══════════════════════════════
+// IMMOINTEL V5 — JS COMPLET
+// ═══════════════════════════════
 
 // — Région —
-const REGION_MAP = {
-  idf: ['Paris','Boulogne','Vincennes','Versailles','Saint-Denis','Montreuil','Nanterre','Levallois','Neuilly','Issy','Créteil'],
-  aura: ['Lyon','Grenoble','Clermont-Ferrand','Annecy','Chambéry','Valence'],
-  paca: ['Marseille','Nice','Aix-en-Provence','Toulon','Avignon','Cannes'],
-  occitanie: ['Toulouse','Montpellier','Nîmes','Perpignan'],
-  'nouvelle-aquitaine': ['Bordeaux','La Rochelle','Limoges','Poitiers'],
-  bretagne: ['Rennes','Brest','Lorient','Quimper'],
-  pdl: ['Nantes','Angers','Le Mans','Saint-Nazaire'],
-  'grand-est': ['Strasbourg','Reims','Metz','Nancy','Mulhouse'],
-  hdf: ['Lille','Amiens','Roubaix','Tourcoing'],
+const REGION_MAP={
+  idf:['Paris','Boulogne','Vincennes','Versailles','Saint-Denis','Montreuil','Nanterre','Levallois','Neuilly','Issy','Créteil'],
+  aura:['Lyon','Grenoble','Clermont-Ferrand','Annecy','Chambéry','Valence'],
+  paca:['Marseille','Nice','Aix-en-Provence','Toulon','Avignon','Cannes'],
+  occitanie:['Toulouse','Montpellier','Nîmes','Perpignan'],
+  'nouvelle-aquitaine':['Bordeaux','La Rochelle','Limoges','Poitiers'],
+  bretagne:['Rennes','Brest','Lorient','Quimper'],
+  pdl:['Nantes','Angers','Le Mans','Saint-Nazaire'],
+  'grand-est':['Strasbourg','Reims','Metz','Nancy','Mulhouse'],
+  hdf:['Lille','Amiens','Roubaix','Tourcoing'],
 };
-let currentRegion = 'all';
+let currentRegion='all';
+function setRegion(v){currentRegion=v;if(typeof renderAll==='function')renderAll();if(typeof renderMap==='function')renderMap();}
+function regionMatches(p){if(currentRegion==='all')return true;return(REGION_MAP[currentRegion]||[]).some(c=>(p.city||'').toLowerCase().includes(c.toLowerCase()));}
+window.addEventListener('load',function(){const o=window.getFiltered;if(typeof o==='function')window.getFiltered=()=>o().filter(regionMatches);});
 
-function setRegion(val) {
-  currentRegion = val;
-  if (typeof renderAll==='function') renderAll();
-  if (typeof renderMap==='function') renderMap();
-}
-function regionMatches(p) {
-  if (currentRegion==='all') return true;
-  return (REGION_MAP[currentRegion]||[]).some(c=>(p.city||'').toLowerCase().includes(c.toLowerCase()));
-}
-window.addEventListener('load', function() {
-  const orig = window.getFiltered;
-  if (typeof orig==='function') window.getFiltered = ()=>orig().filter(regionMatches);
-});
-
-// — Actualiser (sans vider les données) —
-function refreshData() {
-  const btn = document.getElementById('refresh-btn');
-  if (btn) { btn.classList.add('spin'); btn.style.pointerEvents='none'; }
-  setTimeout(() => {
-    if (btn) { btn.classList.remove('spin'); btn.style.pointerEvents=''; }
-    const scraped = (typeof SCRAPED_DATA!=='undefined' && SCRAPED_DATA.length>0) ? SCRAPED_DATA : [];
-    PROPS = [...BASE_PROPS, ...scraped];
-    if (typeof renderAll==='function') renderAll();
-    if (typeof renderMap==='function') renderMap();
-    const badge = document.getElementById('cnt-badge');
-    if (badge) {
-      const old = badge.textContent;
-      badge.textContent = '✓ Actualisé !';
-      badge.style.color='var(--green)'; badge.style.background='var(--green-l)';
-      setTimeout(()=>{ badge.textContent=old; badge.style.color=''; badge.style.background=''; },2000);
-    }
-  }, 1000);
+// — Actualiser —
+function refreshData(){
+  const btn=document.getElementById('refresh-btn');
+  if(btn){btn.classList.add('spin');btn.style.pointerEvents='none';}
+  setTimeout(()=>{
+    if(btn){btn.classList.remove('spin');btn.style.pointerEvents='';}
+    const sc=(typeof SCRAPED_DATA!=='undefined'&&SCRAPED_DATA.length>0)?SCRAPED_DATA:[];
+    PROPS=[...BASE_PROPS,...sc];
+    if(typeof renderAll==='function')renderAll();
+    if(typeof renderMap==='function')renderMap();
+    const b=document.getElementById('cnt-badge');
+    if(b){const o=b.textContent;b.textContent='✓ Actualisé!';b.style.color='var(--green)';b.style.background='var(--green-l)';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.background='';},2000);}
+  },1000);
 }
 
 // — Import tabs —
-function switchImportTab(mode) {
-  document.getElementById('tab-text').classList.toggle('active',mode==='text');
-  document.getElementById('tab-url').classList.toggle('active',mode==='url');
-  document.getElementById('import-text-mode').style.display=mode==='text'?'':'none';
-  document.getElementById('import-url-mode').style.display=mode==='url'?'':'none';
+function switchImportTab(m){
+  document.getElementById('tab-text').classList.toggle('active',m==='text');
+  document.getElementById('tab-url').classList.toggle('active',m==='url');
+  document.getElementById('import-text-mode').style.display=m==='text'?'':'none';
+  document.getElementById('import-url-mode').style.display=m==='url'?'':'none';
 }
 
-// — Lien + rapport dans fiche —
-function injectV4Buttons(p) {
+// — Boutons fiche —
+function injectV4Buttons(p){
   setTimeout(()=>{
     const secs=document.querySelectorAll('.d-sec');
-    if (!secs.length) return;
+    if(!secs.length)return;
     const sec=secs[0];
-    if (p&&p.url&&!sec.querySelector('.annonce-link')) {
+    if(p&&p.url&&!sec.querySelector('.annonce-link')){
       const a=document.createElement('a');
-      a.href=p.url; a.target='_blank'; a.className='annonce-link';
-      a.innerHTML='🔗 Voir l\'annonce originale'; sec.appendChild(a);
+      a.href=p.url;a.target='_blank';a.className='annonce-link';
+      a.innerHTML='🔗 Voir l\'annonce originale';sec.appendChild(a);
     }
-    if (!sec.querySelector('.rapport-btn')) {
+    if(!sec.querySelector('.rapport-btn')){
       const btn=document.createElement('button');
-      btn.className='rapport-btn'; btn.innerHTML='📋 Dossier Banquier';
-      btn.onclick=()=>openRapportBanquier(p); sec.appendChild(btn);
+      btn.className='rapport-btn';btn.innerHTML='📋 Dossier Banquier';
+      btn.onclick=()=>openRapportBanquier(p);sec.appendChild(btn);
     }
   },150);
 }
 
-// ══════════════════════════════
+// ═══════════════════════
 // RAPPORT BANQUIER
-// ══════════════════════════════
-function closePdfModal() { document.getElementById('pdf-modal').classList.remove('open'); }
-function updateRapport() { if(window.SEL) renderRapportContent(window.SEL); }
+// ═══════════════════════
+function closePdfModal(){document.getElementById('pdf-modal').classList.remove('open');}
+function updateRapport(){if(window._rapportProp)renderRapportContent(window._rapportProp);}
 
-function renderRapportContent(p) {
-  const taux    = parseFloat(document.getElementById('rp-taux').value||4)/100/12;
-  const duree   = parseInt(document.getElementById('rp-duree').value||20)*12;
-  const apportP = parseFloat(document.getElementById('rp-apport').value||30)/100;
-  const notaire = parseFloat(document.getElementById('rp-notaire').value||8)/100;
-  const charges = parseFloat(document.getElementById('rp-charges').value||25)/100;
-  const nom     = document.getElementById('rp-nom').value||'Investisseur';
-  const works   = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
-  const fraisNot= Math.round(p.price*notaire);
-  const total   = p.price+works+fraisNot;
-  const apport  = Math.round(total*apportP);
-  const emprun  = total-apport;
-  const mensua  = taux>0 ? Math.round(emprun*taux*Math.pow(1+taux,duree)/(Math.pow(1+taux,duree)-1)) : Math.round(emprun/duree);
-  const loyerNet= Math.round((p.rental||0)*(1-charges));
-  const cf      = loyerNet-mensua;
-  const rBrut   = ((p.rental||0)*12/p.price*100).toFixed(2);
-  const rNet    = (loyerNet*12/total*100).toFixed(2);
-  const pv      = ((p.resale||p.price)-total);
-  const roi     = (pv/total*100).toFixed(1);
-  const today   = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const dureeAns= Math.round(duree/12);
-  const projRows= [1,3,5,10,dureeAns].map(y=>({y,val:Math.round((p.rental||0)*12*Math.pow(1.015,y))}));
-  const maxProj = projRows[projRows.length-1].val;
-  const row=(l,v,c='')=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600;${c}">${v}</span></div>`;
+function renderRapportContent(p){
+  const taux=parseFloat(document.getElementById('rp-taux').value||4)/100/12;
+  const duree=parseInt(document.getElementById('rp-duree').value||20)*12;
+  const apportP=parseFloat(document.getElementById('rp-apport').value||30)/100;
+  const notaire=parseFloat(document.getElementById('rp-notaire').value||8)/100;
+  const charges=parseFloat(document.getElementById('rp-charges').value||25)/100;
+  const nom=document.getElementById('rp-nom').value||'Investisseur';
+  const works=(p.works||[]).reduce((s,w)=>s+(w.c||0),0);
+  const fraisNot=Math.round(p.price*notaire);
+  const total=p.price+works+fraisNot;
+  const apport=Math.round(total*apportP);
+  const emprun=total-apport;
+  const mensua=taux>0?Math.round(emprun*taux*Math.pow(1+taux,duree)/(Math.pow(1+taux,duree)-1)):Math.round(emprun/duree);
+  const loyerNet=Math.round((p.rental||0)*(1-charges));
+  const cf=loyerNet-mensua;
+  const rBrut=((p.rental||0)*12/p.price*100).toFixed(2);
+  const rNet=(loyerNet*12/total*100).toFixed(2);
+  const pv=((p.resale||p.price)-total);
+  const roi=(pv/total*100).toFixed(1);
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const dureeAns=Math.round(duree/12);
+  const proj=[1,3,5,10,dureeAns].map(y=>({y,val:Math.round((p.rental||0)*12*Math.pow(1.015,y))}));
+  const maxProj=proj[proj.length-1].val;
+  const R=(l,v,c='')=>`<div class="pdf-row"><span style="color:#5a6270">${l}</span><span style="font-weight:600;${c}">${v}</span></div>`;
+  const S=(t)=>`<div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:12px 0 8px;text-transform:uppercase">${t}</div>`;
   document.getElementById('pdf-content').innerHTML=`
-  <div style="text-align:center;padding:16px 0 12px;border-bottom:2px solid #1a6fd4;margin-bottom:16px">
-    <div style="font-size:20pt;font-weight:800;color:#1a6fd4">IMMO<span style="color:#1a1f2e">INTEL</span></div>
-    <div style="font-size:13pt;font-weight:700;color:#1a1f2e;margin-top:6px">Dossier de demande de financement</div>
-    <div style="font-size:10pt;color:#5a6270;margin-top:3px">${p.name} — ${p.city}</div>
-    <div style="font-size:9pt;color:#98a3b0;margin-top:4px">Préparé par ${nom} · ${today}</div>
+  <div style="text-align:center;padding:14px 0 10px;border-bottom:2px solid #1a6fd4;margin-bottom:14px">
+    <div style="font-size:18pt;font-weight:800;color:#1a6fd4">IMMO<span style="color:#1a1f2e">INTEL</span></div>
+    <div style="font-size:12pt;font-weight:700;color:#1a1f2e;margin-top:5px">Dossier de demande de financement</div>
+    <div style="font-size:10pt;color:#5a6270">${p.name} — ${p.city}</div>
+    <div style="font-size:9pt;color:#98a3b0;margin-top:3px">Préparé par ${nom} · ${today}</div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-    <div style="background:#e8f0fb;border-radius:8px;padding:12px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <div style="background:#e8f0fb;border-radius:8px;padding:10px 12px">
       <div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Cash-flow mensuel</div>
-      <div style="font-size:20pt;font-weight:800;color:${cf>=0?'#157a32':'#c0302a'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €</div>
+      <div style="font-size:18pt;font-weight:800;color:${cf>=0?'#157a32':'#c0302a'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €</div>
     </div>
-    <div style="background:#e4f5ea;border-radius:8px;padding:12px">
+    <div style="background:#e4f5ea;border-radius:8px;padding:10px 12px">
       <div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Rendement net</div>
-      <div style="font-size:20pt;font-weight:800;color:#157a32">${rNet} %</div>
+      <div style="font-size:18pt;font-weight:800;color:#157a32">${rNet} %</div>
     </div>
   </div>
-  <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin-bottom:8px;text-transform:uppercase">🏠 Le bien</div>
-  ${[['Désignation',p.name],['Localisation',p.city],['Surface',p.surface+'m² — '+p.rooms+' pièces'],['DPE','Classe '+p.dpe]].map(([l,v])=>row(l,v)).join('')}
-  <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:12px 0 8px;text-transform:uppercase">💶 Plan de financement</div>
-  ${[['Prix d\'acquisition',p.price.toLocaleString('fr-FR')+' €'],['Frais notaire',fraisNot.toLocaleString('fr-FR')+' €'],['Travaux estimés',works.toLocaleString('fr-FR')+' €'],['<b>Coût total</b>','<b>'+total.toLocaleString('fr-FR')+' €</b>'],['Apport ('+Math.round(apportP*100)+'%)',apport.toLocaleString('fr-FR')+' €'],['<b>Emprunt</b>','<b>'+emprun.toLocaleString('fr-FR')+' €</b>'],['Taux / Durée',(taux*1200).toFixed(2)+'% / '+dureeAns+' ans'],['<b>Mensualité</b>','<b style="color:#c0302a">'+mensua.toLocaleString('fr-FR')+' €/mois</b>']].map(([l,v])=>row(l,v)).join('')}
-  <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:12px 0 8px;text-transform:uppercase">💰 Rentabilité</div>
-  ${[['Loyer brut',(p.rental||0).toLocaleString('fr-FR')+' €/mois'],['Loyer net',loyerNet.toLocaleString('fr-FR')+' €/mois'],['Rendement brut',rBrut+' %'],['Rendement net',rNet+' %'],['Cash-flow mensuel',(cf>=0?'+':'')+cf.toLocaleString('fr-FR')+' €/mois']].map(([l,v])=>row(l,v,'color:'+(v.includes('-')?'#c0302a':'#157a32'))).join('')}
-  <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:12px 0 8px;text-transform:uppercase">📈 Projection loyers annuels</div>
-  ${projRows.map(({y,val})=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10pt"><span style="width:45px;color:#5a6270;text-align:right">An ${y}</span><div style="flex:1;height:14px;background:#f0f2f6;border-radius:3px;overflow:hidden"><div style="width:${Math.round(val/maxProj*100)}%;height:100%;background:#1a6fd4;border-radius:3px"></div></div><span style="width:75px;font-weight:600;color:#1a6fd4">${val.toLocaleString('fr-FR')} €</span></div>`).join('')}
-  <div style="margin-top:14px;padding:10px;background:#fdf3dc;border-radius:7px;font-size:9pt;color:#8a5f00;border-left:3px solid #8a5f00">
+  ${S('🏠 Le bien')}
+  ${R('Désignation',p.name)}${R('Localisation',p.city)}${R('Surface',p.surface+'m² — '+p.rooms+' pièces')}${R('DPE','Classe '+p.dpe)}
+  ${S('💶 Plan de financement')}
+  ${R('Prix acquisition',p.price.toLocaleString('fr-FR')+' €')}${R('Frais notaire ('+Math.round(notaire*100)+'%)',fraisNot.toLocaleString('fr-FR')+' €')}${R('Travaux estimés',works.toLocaleString('fr-FR')+' €')}${R('<b>Coût total projet</b>','<b>'+total.toLocaleString('fr-FR')+' €</b>')}${R('Apport ('+Math.round(apportP*100)+'%)',apport.toLocaleString('fr-FR')+' €')}${R('<b>Emprunt</b>','<b style="color:#1a6fd4">'+emprun.toLocaleString('fr-FR')+' €</b>')}${R('Taux / Durée',(taux*1200).toFixed(2)+'% / '+dureeAns+' ans')}${R('<b>Mensualité</b>','<b style="color:#c0302a">'+mensua.toLocaleString('fr-FR')+' €/mois</b>')}
+  ${S('💰 Rentabilité')}
+  ${R('Loyer brut estimé',(p.rental||0).toLocaleString('fr-FR')+' €/mois','color:#157a32')}${R('Loyer net (après charges)',loyerNet.toLocaleString('fr-FR')+' €/mois','color:#157a32')}${R('Rendement brut',rBrut+' %')}${R('Rendement net',rNet+' %','color:#157a32')}${R('Cash-flow mensuel',(cf>=0?'+':'')+cf.toLocaleString('fr-FR')+' €/mois','color:'+(cf>=0?'#157a32':'#c0302a'))}
+  ${S('📈 Projection loyers annuels')}
+  ${proj.map(({y,val})=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10pt"><span style="width:42px;color:#5a6270;text-align:right">An ${y}</span><div style="flex:1;height:12px;background:#f0f2f6;border-radius:2px;overflow:hidden"><div style="width:${Math.round(val/maxProj*100)}%;height:100%;background:#1a6fd4;border-radius:2px"></div></div><span style="font-weight:600;color:#1a6fd4;width:70px">${val.toLocaleString('fr-FR')} €</span></div>`).join('')}
+  ${S('📊 Revente (horizon '+dureeAns+' ans)')}
+  ${R('Valeur de revente estimée',(p.resale||0).toLocaleString('fr-FR')+' €')}${R('Plus-value potentielle','+'+pv.toLocaleString('fr-FR')+' €','color:#157a32')}${R('ROI global estimé','+'+roi+' %','color:#1a6fd4')}
+  ${(works>0?S('🔨 Travaux')+(p.works||[]).map(w=>R(w.n,w.c.toLocaleString('fr-FR')+' €')).join(''):'')}
+  <div style="margin-top:12px;padding:8px 12px;background:#fdf3dc;border-radius:6px;font-size:9pt;color:#8a5f00;border-left:3px solid #8a5f00">
     <b>⚠️ Avertissement :</b> Estimations indicatives ImmoIntel. À valider avec un professionnel.
   </div>`;
 }
 
-function openRapportBanquier(p) {
-  if (!p) p=window.SEL;
-  if (!p) return alert('Sélectionnez d\'abord un bien.');
-  window.SEL=p; injectV4Buttons(p);
+function openRapportBanquier(p){
+  if(!p)p=window.SEL;
+  if(!p)return alert('Sélectionnez d\'abord un bien.');
+  window._rapportProp=p;
   renderRapportContent(p);
   document.getElementById('pdf-modal').classList.add('open');
 }
 
-function printRapportPDF() {
+function printRapportPDF(){
   const pr=document.getElementById('print-rapport');
   pr.innerHTML=document.getElementById('pdf-content').innerHTML;
   window.print();
-  setTimeout(()=>{ pr.innerHTML=''; },1000);
+  setTimeout(()=>{pr.innerHTML='';},1000);
 }
 
-// ══════════════════════════════
+// ═══════════════════════
 // PALANTIR DASHBOARD
-// ══════════════════════════════
-let palCurrentTab = 'overview';
-let compareList = [];
+// ═══════════════════════
+let _compareList=[];
 
-function openPalantir() {
-  renderPalantir('overview');
+function openPalantir(){
+  _compareList=[];
   document.getElementById('palantir-modal').classList.add('open');
+  document.querySelectorAll('.pal-tab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
+  renderPalantir('overview');
 }
-function closePalantir() { document.getElementById('palantir-modal').classList.remove('open'); }
-
-function palTab(tab, btn) {
-  palCurrentTab = tab;
+function closePalantir(){document.getElementById('palantir-modal').classList.remove('open');}
+function palTab(tab,btn){
   document.querySelectorAll('.pal-tab').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   renderPalantir(tab);
 }
 
-function renderPalantir(tab) {
-  const props = PROPS || [];
-  const el = document.getElementById('pal-content');
-  if (!el) return;
+function calcMetrics(p){
+  const y=p.rental*12/p.price*100;
+  const m=Math.round(p.price*0.7*0.004);
+  const cf=p.rental-m;
+  return{...p,y,cf};
+}
 
-  if (tab==='overview') {
-    const total = props.length;
-    const avgPrice = Math.round(props.reduce((s,p)=>s+p.price,0)/total);
-    const avgYield = (props.reduce((s,p)=>s+(p.rental*12/p.price*100),0)/total).toFixed(1);
-    const avgScore = Math.round(props.reduce((s,p)=>s+(p.score||0),0)/total);
-    const topCF = props.filter(p=>{
-      const m=Math.round(p.price*0.7*0.004);
-      return (p.rental-m)>0;
-    }).length;
+function renderPalantir(tab){
+  const props=(PROPS||[]).map(calcMetrics);
+  const el=document.getElementById('pal-content');
+  if(!el)return;
+  const total=props.length;
+  if(total===0){el.innerHTML='<div style="text-align:center;padding:40px;color:#8b949e">Aucun bien chargé</div>';return;}
 
-    // Distribution par type
-    const byType={};
-    props.forEach(p=>{ byType[p.type]=(byType[p.type]||0)+1; });
-
-    // Distribution par ville (top 8)
-    const byCity={};
-    props.forEach(p=>{ const c=p.city.split(' ')[0]; byCity[c]=(byCity[c]||0)+1; });
+  if(tab==='overview'){
+    const avgPrice=Math.round(props.reduce((s,p)=>s+p.price,0)/total);
+    const avgY=(props.reduce((s,p)=>s+p.y,0)/total).toFixed(1);
+    const avgScore=Math.round(props.reduce((s,p)=>s+(p.score||0),0)/total);
+    const posCF=props.filter(p=>p.cf>0).length;
+    const byType={};props.forEach(p=>{byType[p.type]=(byType[p.type]||0)+1;});
+    const byCity={};props.forEach(p=>{const c=p.city.split(' ')[0];byCity[c]=(byCity[c]||0)+1;});
     const topCities=Object.entries(byCity).sort((a,b)=>b[1]-a[1]).slice(0,8);
-
-    // Distribution rendement
-    const yieldBuckets={'<3%':0,'3-4%':0,'4-5%':0,'5-6%':0,'6-7%':0,'>7%':0};
+    const maxC=topCities[0]?.[1]||1;
+    const yBuckets={'< 3%':0,'3–4%':0,'4–5%':0,'5–6%':0,'6–7%':0,'> 7%':0};
     props.forEach(p=>{
-      const y=p.rental*12/p.price*100;
-      if(y<3) yieldBuckets['<3%']++;
-      else if(y<4) yieldBuckets['3-4%']++;
-      else if(y<5) yieldBuckets['4-5%']++;
-      else if(y<6) yieldBuckets['5-6%']++;
-      else if(y<7) yieldBuckets['6-7%']++;
-      else yieldBuckets['>7%']++;
+      if(p.y<3)yBuckets['< 3%']++;
+      else if(p.y<4)yBuckets['3–4%']++;
+      else if(p.y<5)yBuckets['4–5%']++;
+      else if(p.y<6)yBuckets['5–6%']++;
+      else if(p.y<7)yBuckets['6–7%']++;
+      else yBuckets['> 7%']++;
     });
-
-    const maxCity = topCities[0]?.[1]||1;
-    const maxYield = Math.max(...Object.values(yieldBuckets));
-    const typeColors = {locatif:'#e0620d',maison:'#157a32',immeuble:'#1a6fd4',appartement:'#b03888',commercial:'#7a4a1a'};
+    const maxY=Math.max(...Object.values(yBuckets));
+    const tColors={locatif:'#e0620d',maison:'#157a32',immeuble:'#1a6fd4',appartement:'#b03888',commercial:'#7a4a1a'};
 
     el.innerHTML=`
     <div class="pal-grid">
-      <div class="pal-kpi"><div class="pal-kpi-val">${total}</div><div class="pal-kpi-lbl">Biens analysés</div><div class="pal-kpi-sub">+230 scrapés BienIci</div></div>
-      <div class="pal-kpi"><div class="pal-kpi-val">${(avgPrice/1000).toFixed(0)}k€</div><div class="pal-kpi-lbl">Prix moyen</div><div class="pal-kpi-sub">médiane du portefeuille</div></div>
-      <div class="pal-kpi"><div class="pal-kpi-val">${avgYield}%</div><div class="pal-kpi-lbl">Rendement moyen</div><div class="pal-kpi-sub">brut annuel</div></div>
-      <div class="pal-kpi"><div class="pal-kpi-val" style="color:#3fb950">${topCF}</div><div class="pal-kpi-lbl">Cash-flow positif</div><div class="pal-kpi-sub">${Math.round(topCF/total*100)}% du portefeuille</div></div>
+      <div class="pal-kpi"><div class="pal-kpi-val">${total}</div><div class="pal-kpi-lbl">Biens analysés</div><div class="pal-kpi-sub">portefeuille complet</div></div>
+      <div class="pal-kpi"><div class="pal-kpi-val">${(avgPrice/1000).toFixed(0)}k€</div><div class="pal-kpi-lbl">Prix moyen</div><div class="pal-kpi-sub">médiane du marché</div></div>
+      <div class="pal-kpi"><div class="pal-kpi-val">${avgY}%</div><div class="pal-kpi-lbl">Rendement moyen</div><div class="pal-kpi-sub">brut annuel</div></div>
+      <div class="pal-kpi"><div class="pal-kpi-val" style="color:#3fb950">${posCF}</div><div class="pal-kpi-lbl">Cash-flow positif</div><div class="pal-kpi-sub">${Math.round(posCF/total*100)}% du portefeuille</div></div>
     </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       <div class="pal-section">
-        <div class="pal-section-title">🏙️ Répartition par ville</div>
-        ${topCities.map(([city,count])=>`
-          <div class="pal-bar-row">
-            <div class="pal-bar-lbl">${city}</div>
-            <div class="pal-bar-bg">
-              <div class="pal-bar-fill" style="width:${Math.round(count/maxCity*100)}%;background:#1f6feb">${count}</div>
-            </div>
-          </div>`).join('')}
+        <div class="pal-section-title">🏙️ Biens par ville (top 8)</div>
+        ${topCities.map(([c,n])=>`<div class="pal-bar-row"><div class="pal-bar-lbl">${c}</div><div class="pal-bar-bg"><div class="pal-bar-fill" style="width:${Math.round(n/maxC*100)}%;background:#1f6feb">${n}</div></div></div>`).join('')}
       </div>
       <div class="pal-section">
         <div class="pal-section-title">📊 Distribution des rendements</div>
-        ${Object.entries(yieldBuckets).map(([lbl,count])=>`
-          <div class="pal-bar-row">
-            <div class="pal-bar-lbl">${lbl}</div>
-            <div class="pal-bar-bg">
-              <div class="pal-bar-fill" style="width:${maxYield>0?Math.round(count/maxYield*100):0}%;background:${count>0?'#3fb950':'#21262d'}">${count}</div>
-            </div>
-          </div>`).join('')}
+        ${Object.entries(yBuckets).map(([l,n])=>`<div class="pal-bar-row"><div class="pal-bar-lbl">${l}</div><div class="pal-bar-bg"><div class="pal-bar-fill" style="width:${maxY>0?Math.round(n/maxY*100):0}%;background:${n>0?'#3fb950':'#21262d'}">${n}</div></div></div>`).join('')}
       </div>
     </div>
-
     <div class="pal-section">
-      <div class="pal-section-title">🏠 Répartition par type de bien</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        ${Object.entries(byType).map(([type,count])=>`
-          <div style="background:#21262d;border-radius:8px;padding:12px 16px;text-align:center;min-width:100px">
-            <div style="font-size:18px;font-weight:800;color:${typeColors[type]||'#58a6ff'}">${count}</div>
-            <div style="font-size:10px;color:#8b949e;margin-top:3px;text-transform:capitalize">${type}</div>
-            <div style="font-size:10px;color:#58a6ff;margin-top:2px">${Math.round(count/total*100)}%</div>
-          </div>`).join('')}
+      <div class="pal-section-title">🏠 Répartition par type</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${Object.entries(byType).map(([t,n])=>`<div style="background:#21262d;border-radius:8px;padding:10px 14px;text-align:center;min-width:90px"><div style="font-size:16px;font-weight:800;color:${tColors[t]||'#58a6ff'}">${n}</div><div style="font-size:10px;color:#8b949e;margin-top:2px;text-transform:capitalize">${t}</div><div style="font-size:10px;color:#58a6ff">${Math.round(n/total*100)}%</div></div>`).join('')}
       </div>
     </div>`;
 
-  } else if (tab==='villes') {
+  }else if(tab==='villes'){
     const byCity={};
     props.forEach(p=>{
       const c=p.city.split(' ')[0];
-      if(!byCity[c]) byCity[c]={count:0,totalPrice:0,totalYield:0,totalCF:0,biens:[]};
-      byCity[c].count++;
-      byCity[c].totalPrice+=p.price;
-      byCity[c].totalYield+=p.rental*12/p.price*100;
-      const mensua=Math.round(p.price*0.7*0.004);
-      byCity[c].totalCF+=(p.rental-mensua);
-      byCity[c].biens.push(p);
+      if(!byCity[c])byCity[c]={count:0,sp:0,sy:0,scf:0,biens:[]};
+      byCity[c].count++;byCity[c].sp+=p.price;byCity[c].sy+=p.y;byCity[c].scf+=p.cf;byCity[c].biens.push(p);
     });
     const cities=Object.entries(byCity).sort((a,b)=>b[1].count-a[1].count);
+    el.innerHTML=`<div class="pal-section"><div class="pal-section-title">🗺️ Analyse par ville</div>
+    <table class="pal-table">
+      <tr><th>Ville</th><th>Biens</th><th>Prix moy.</th><th>Rend. moy.</th><th>CF moyen</th><th>Meilleur bien</th></tr>
+      ${cities.map(([c,d])=>{
+        const aP=Math.round(d.sp/d.count);const aY=(d.sy/d.count).toFixed(1);const aCF=Math.round(d.scf/d.count);
+        const best=d.biens.sort((a,b)=>(b.score||0)-(a.score||0))[0];
+        return`<tr onclick="closePalantir()" title="Filtrer sur ${c}">
+          <td style="font-weight:700;color:#58a6ff">${c}</td>
+          <td><span style="background:#21262d;padding:2px 7px;border-radius:4px;font-size:10px">${d.count}</span></td>
+          <td>${(aP/1000).toFixed(0)}k€</td>
+          <td style="color:${parseFloat(aY)>=5?'#3fb950':'#58a6ff'}">${aY}%</td>
+          <td style="color:${aCF>=0?'#3fb950':'#f85149'}">${aCF>=0?'+':''}${aCF.toLocaleString('fr-FR')}€</td>
+          <td style="font-size:10px;color:#8b949e;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best?best.name.substring(0,25):'-'}</td>
+        </tr>`;}).join('')}
+    </table></div>`;
 
-    el.innerHTML=`
-    <div class="pal-section">
-      <div class="pal-section-title">🗺️ Analyse par ville</div>
-      <table class="pal-table">
-        <tr><th>Ville</th><th>Biens</th><th>Prix moyen</th><th>Rend. moyen</th><th>CF moyen</th><th>Meilleur bien</th></tr>
-        ${cities.map(([city,d])=>{
-          const avgP=Math.round(d.totalPrice/d.count);
-          const avgY=(d.totalYield/d.count).toFixed(1);
-          const avgCF=Math.round(d.totalCF/d.count);
-          const best=d.biens.sort((a,b)=>(b.score||0)-(a.score||0))[0];
-          return `<tr>
-            <td style="font-weight:700;color:#58a6ff">${city}</td>
-            <td><span class="pal-badge" style="background:#21262d;color:#e6edf3">${d.count}</span></td>
-            <td>${(avgP/1000).toFixed(0)}k€</td>
-            <td style="color:${parseFloat(avgY)>=5?'#3fb950':'#58a6ff'}">${avgY}%</td>
-            <td style="color:${avgCF>=0?'#3fb950':'#f85149'}">${avgCF>=0?'+':''}${avgCF.toLocaleString('fr-FR')}€</td>
-            <td style="font-size:10px;color:#8b949e">${best?best.name.substring(0,25)+'…':'-'}</td>
-          </tr>`;
-        }).join('')}
-      </table>
+  }else if(tab==='top'){
+    const topY=[...props].sort((a,b)=>b.y-a.y).slice(0,10);
+    const topCF=[...props].sort((a,b)=>b.cf-a.cf).slice(0,10);
+    const topS=[...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
+    const T=(list,fn,color)=>`<table class="pal-table"><tr><th>#</th><th>Bien</th><th>Ville</th><th>Val.</th><th></th></tr>
+    ${list.map((p,i)=>`<tr><td style="color:#8b949e">${i+1}</td><td style="color:#e6edf3;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${p.name}</td><td style="color:#8b949e">${p.city.split(' ')[0]}</td><td style="color:${typeof color==='function'?color(p):color};font-weight:700">${fn(p)}</td><td><button class="pal-btn" onclick="closePalantir();setTimeout(()=>selectPropById(${p.id}),100)">Voir</button></td></tr>`).join('')}</table>`;
+    el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="pal-section"><div class="pal-section-title">🏆 Top rendement brut</div>${T(topY,p=>p.y.toFixed(1)+'%','#3fb950')}</div>
+      <div class="pal-section"><div class="pal-section-title">💰 Top cash-flow</div>${T(topCF,p=>(p.cf>=0?'+':'')+p.cf.toLocaleString('fr-FR')+'€',p=>p.cf>=0?'#3fb950':'#f85149')}</div>
+      <div class="pal-section"><div class="pal-section-title">⭐ Top score IA</div>${T(topS,p=>(p.score||0)+'/100','#58a6ff')}</div>
     </div>`;
 
-  } else if (tab==='top') {
-    const scored = [...props].map(p=>{
-      const y=p.rental*12/p.price*100;
-      const mensua=Math.round(p.price*0.7*0.004);
-      const cf=p.rental-mensua;
-      return {...p, calcYield:y, calcCF:cf};
-    });
-    const topYield=[...scored].sort((a,b)=>b.calcYield-a.calcYield).slice(0,10);
-    const topCF=[...scored].sort((a,b)=>b.calcCF-a.calcCF).slice(0,10);
-    const topScore=[...scored].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
-
-    const tableRows=(list,valFn,color)=>list.map((p,i)=>`
-      <tr>
-        <td style="color:#8b949e">${i+1}</td>
-        <td style="font-weight:600;color:#e6edf3;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td>
-        <td style="color:#8b949e">${p.city}</td>
-        <td style="color:${color};font-weight:700">${valFn(p)}</td>
-        <td><button onclick="closePalantir();selectPropById(${p.id})" style="background:#1f6feb;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer">Voir</button></td>
-      </tr>`).join('');
-
+  }else if(tab==='compare'){
+    const top25=[...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,25);
     el.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-      <div class="pal-section">
-        <div class="pal-section-title">🏆 Top rendement brut</div>
-        <table class="pal-table">
-          <tr><th>#</th><th>Bien</th><th>Ville</th><th>Rend.</th><th></th></tr>
-          ${tableRows(topYield,p=>p.calcYield.toFixed(1)+'%','#3fb950')}
-        </table>
-      </div>
-      <div class="pal-section">
-        <div class="pal-section-title">💰 Top cash-flow</div>
-        <table class="pal-table">
-          <tr><th>#</th><th>Bien</th><th>Ville</th><th>CF/mois</th><th></th></tr>
-          ${tableRows(topCF,p=>(p.calcCF>=0?'+':'')+p.calcCF.toLocaleString('fr-FR')+'€',p=>p.calcCF>=0?'#3fb950':'#f85149')}
-        </table>
-      </div>
-      <div class="pal-section">
-        <div class="pal-section-title">⭐ Top score IA</div>
-        <table class="pal-table">
-          <tr><th>#</th><th>Bien</th><th>Ville</th><th>Score</th><th></th></tr>
-          ${tableRows(topScore,p=>(p.score||0)+'/100','#58a6ff')}
-        </table>
-      </div>
-    </div>`;
-
-  } else if (tab==='compare') {
-    const top20=[...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,20);
-    el.innerHTML=`
-    <div class="pal-section" style="margin-bottom:14px">
-      <div class="pal-section-title">Sélectionnez 2 à 3 biens à comparer</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${top20.map(p=>`
-          <button onclick="toggleCompare(${p.id},this)" data-id="${p.id}"
-            style="padding:5px 10px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#8b949e;font-size:11px;cursor:pointer;transition:all .15s">
-            ${p.name.substring(0,20)} — ${p.city.split(' ')[0]}
-          </button>`).join('')}
+    <div class="pal-section" style="margin-bottom:12px">
+      <div class="pal-section-title">Sélectionnez 2 à 3 biens à comparer (top 25 par score IA)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+        ${top25.map(p=>`<button onclick="toggleCompare(${p.id},this)" data-id="${p.id}" style="padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#8b949e;font-size:10px;cursor:pointer;transition:all .15s">${p.name.substring(0,22)} — ${p.city.split(' ')[0]}</button>`).join('')}
       </div>
     </div>
-    <div id="compare-result" style="display:grid;gap:10px"></div>`;
+    <div id="compare-result"></div>`;
   }
 }
 
-function toggleCompare(id, btn) {
-  const idx=compareList.indexOf(id);
-  if(idx>-1) {
-    compareList.splice(idx,1);
-    btn.style.background='#21262d'; btn.style.color='#8b949e'; btn.style.borderColor='#30363d';
-  } else {
-    if(compareList.length>=3) return;
-    compareList.push(id);
-    btn.style.background='#1f6feb'; btn.style.color='#fff'; btn.style.borderColor='#1f6feb';
-  }
+function toggleCompare(id,btn){
+  const idx=_compareList.indexOf(id);
+  if(idx>-1){_compareList.splice(idx,1);btn.style.background='#21262d';btn.style.color='#8b949e';btn.style.borderColor='#30363d';}
+  else{if(_compareList.length>=3)return;_compareList.push(id);btn.style.background='#1f6feb';btn.style.color='#fff';btn.style.borderColor='#1f6feb';}
   renderCompare();
 }
 
-function renderCompare() {
+function renderCompare(){
   const el=document.getElementById('compare-result');
-  if(!el||compareList.length===0) { if(el) el.innerHTML=''; return; }
-  const selected=compareList.map(id=>PROPS.find(p=>p.id===id)).filter(Boolean);
+  if(!el)return;
+  if(_compareList.length===0){el.innerHTML='';return;}
+  const sel=_compareList.map(id=>PROPS.find(p=>p.id===id)).filter(Boolean).map(calcMetrics);
   const metrics=[
-    {lbl:'Prix',fn:p=>p.price.toLocaleString('fr-FR')+' €',best:'min'},
-    {lbl:'Surface',fn:p=>p.surface+'m²',best:'max'},
-    {lbl:'Loyer/mois',fn:p=>(p.rental||0).toLocaleString('fr-FR')+' €',best:'max'},
-    {lbl:'Rendement brut',fn:p=>(p.rental*12/p.price*100).toFixed(2)+'%',best:'max'},
-    {lbl:'Cash-flow',fn:p=>{const m=Math.round(p.price*0.7*0.004);return (p.rental-m>=0?'+':'')+(p.rental-m).toLocaleString('fr-FR')+'€'},best:'max'},
-    {lbl:'Score IA',fn:p=>(p.score||0)+'/100',best:'max'},
-    {lbl:'Plus-value est.',fn:p=>'+'+((p.resale-p.price)/1000).toFixed(0)+'k€',best:'max'},
-    {lbl:'DPE',fn:p=>p.dpe,best:'min'},
-    {lbl:'Travaux',fn:p=>(p.works||[]).reduce((s,w)=>s+w.c,0).toLocaleString('fr-FR')+' €',best:'min'},
+    ['Prix',p=>p.price.toLocaleString('fr-FR')+' €'],
+    ['Surface',p=>p.surface+'m²'],
+    ['Loyer/mois',p=>(p.rental||0).toLocaleString('fr-FR')+' €'],
+    ['Rendement brut',p=>p.y.toFixed(2)+'%'],
+    ['Cash-flow',p=>(p.cf>=0?'+':'')+p.cf.toLocaleString('fr-FR')+'€'],
+    ['Score IA',p=>(p.score||0)+'/100'],
+    ['Plus-value est.',p=>'+'+((( p.resale||p.price)-p.price)/1000).toFixed(0)+'k€'],
+    ['DPE',p=>p.dpe],
+    ['Travaux',p=>(p.works||[]).reduce((s,w)=>s+w.c,0).toLocaleString('fr-FR')+' €'],
+    ['Type',p=>p.type],
+    ['Source',p=>p.src||'Demo'],
   ];
-  el.innerHTML=`
-  <div class="pal-section">
-    <div class="pal-section-title">📊 Comparaison côte à côte</div>
-    <table class="pal-table">
-      <tr><th>Critère</th>${selected.map(p=>`<th style="color:#58a6ff">${p.name.substring(0,18)}…</th>`).join('')}</tr>
-      ${metrics.map(m=>`
-        <tr>
-          <td style="color:#8b949e">${m.lbl}</td>
-          ${selected.map(p=>`<td style="font-weight:600">${m.fn(p)}</td>`).join('')}
-        </tr>`).join('')}
-    </table>
-  </div>`;
+  el.innerHTML=`<div class="pal-section"><div class="pal-section-title">📊 Comparaison côte à côte</div>
+  <table class="pal-table">
+    <tr><th>Critère</th>${sel.map(p=>`<th style="color:#58a6ff">${p.name.substring(0,20)}…</th>`).join('')}</tr>
+    ${metrics.map(([l,fn])=>`<tr><td style="color:#8b949e">${l}</td>${sel.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}
+  </table></div>`;
 }
 
-function selectPropById(id) {
+function selectPropById(id){
   const p=PROPS.find(x=>x.id===id);
-  if(p && typeof selectProp==='function') selectProp(p);
+  if(p&&typeof selectProp==='function')selectProp(p);
 }
 
-console.log('[ImmoIntel V4+Palantir] ✓');
+console.log('[ImmoIntel V5] ✓ Palantir chargé');
 
 </script>
 
 <div id="pdf-modal">
   <div class="pdf-box">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">📋 Dossier Banquier</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:3px">Personnalisez puis imprimez en PDF</div></div>
-      <button onclick="closePdfModal()" style="background:none;border:none;font-size:22px;cursor:pointer">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div><div style="font-size:16px;font-weight:800">📋 Dossier Banquier</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Personnalisez puis imprimez en PDF</div></div>
+      <button onclick="closePdfModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3)">×</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;padding:14px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
-      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Votre nom</div>
-      <input id="rp-nom" type="text" placeholder="Ex: Joel Simoes" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none"/></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Taux (%)</div>
-      <input id="rp-taux" type="number" value="4" step="0.1" min="1" max="10" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Durée (ans)</div>
-      <input id="rp-duree" type="number" value="20" step="1" min="5" max="30" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Apport (%)</div>
-      <input id="rp-apport" type="number" value="30" step="5" min="0" max="100" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Frais notaire (%)</div>
-      <input id="rp-notaire" type="number" value="8" step="0.5" min="0" max="15" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Charges (%)</div>
-      <input id="rp-charges" type="number" value="25" step="5" min="0" max="50" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:10px">
+      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Votre nom</div>
+      <input id="rp-nom" type="text" placeholder="Ex: Joel Simoes" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Taux (%)</div>
+      <input id="rp-taux" type="number" value="4" step="0.1" min="1" max="10" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Durée (ans)</div>
+      <input id="rp-duree" type="number" value="20" step="1" min="5" max="30" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Apport (%)</div>
+      <input id="rp-apport" type="number" value="30" step="5" min="0" max="100" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Frais notaire (%)</div>
+      <input id="rp-notaire" type="number" value="8" step="0.5" min="0" max="15" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Charges (%)</div>
+      <input id="rp-charges" type="number" value="25" step="5" min="0" max="50" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/></div>
     </div>
-    <div id="pdf-content" style="max-height:380px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:16px;background:#fff"></div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn-primary" onclick="printRapportPDF()">🖨️ Imprimer / PDF</button>
+    <div id="pdf-content" style="max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:14px;background:#fff"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-primary" onclick="printRapportPDF()" style="display:flex;align-items:center;gap:6px;justify-content:center">🖨️ Imprimer / PDF</button>
       <button class="btn-sec" onclick="closePdfModal()">Fermer</button>
     </div>
   </div>
@@ -1520,7 +1418,7 @@ console.log('[ImmoIntel V4+Palantir] ✓');
 <div id="palantir-modal">
   <div class="pal-box">
     <div class="pal-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg>
       <div class="pal-title">ImmoIntel — Analyse IA du portefeuille</div>
       <div class="pal-tabs">
         <button class="pal-tab active" onclick="palTab('overview',this)">Vue d'ensemble</button>
@@ -1528,12 +1426,13 @@ console.log('[ImmoIntel V4+Palantir] ✓');
         <button class="pal-tab" onclick="palTab('top',this)">Top opportunités</button>
         <button class="pal-tab" onclick="palTab('compare',this)">Comparateur</button>
       </div>
-      <button onclick="closePalantir()" style="background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;margin-left:10px">×</button>
+      <button onclick="closePalantir()" style="background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;margin-left:8px">×</button>
     </div>
-    <div class="pal-content" id="pal-content"></div>
+    <div class="pal-content" id="pal-content">
+      <div style="text-align:center;padding:40px;color:#8b949e">Chargement...</div>
+    </div>
   </div>
 </div>
-
 <div id="print-rapport" style="display:none"></div>
 </body>
 </html>
