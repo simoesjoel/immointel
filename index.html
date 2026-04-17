@@ -1110,60 +1110,169 @@ function switchImportTab(mode) {
   document.getElementById('import-url-mode').style.display = mode==='url' ? '' : 'none';
 }
 
+
 function closePdfModal() {
   document.getElementById('pdf-modal').classList.remove('open');
+}
+
+function updateRapport() {
+  const p = window.SEL;
+  if (!p) return;
+  renderRapportContent(p);
+}
+
+function renderRapportContent(p) {
+  const taux    = parseFloat(document.getElementById('rp-taux').value||4) / 100 / 12;
+  const duree   = parseInt(document.getElementById('rp-duree').value||20) * 12;
+  const apportP = parseFloat(document.getElementById('rp-apport').value||30) / 100;
+  const notaire = parseFloat(document.getElementById('rp-notaire').value||8) / 100;
+  const charges = parseFloat(document.getElementById('rp-charges').value||25) / 100;
+  const nom     = document.getElementById('rp-nom').value || 'Investisseur';
+
+  const works   = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
+  const fraisNot = Math.round(p.price * notaire);
+  const total   = p.price + works + fraisNot;
+  const apport  = Math.round(total * apportP);
+  const emprun  = total - apport;
+  const mensua  = taux > 0
+    ? Math.round(emprun * taux * Math.pow(1+taux,duree) / (Math.pow(1+taux,duree)-1))
+    : Math.round(emprun / duree);
+  const loyerNet = Math.round((p.rental||0) * (1 - charges));
+  const cf      = loyerNet - mensua;
+  const rBrut   = ((p.rental||0)*12/p.price*100).toFixed(2);
+  const rNet    = ((loyerNet*12)/total*100).toFixed(2);
+  const pv      = ((p.resale||p.price) - total);
+  const roi     = (pv/total*100).toFixed(1);
+  const today   = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const dureeAns = Math.round(duree/12);
+
+  // Projection loyers sur la durée
+  const projRows = [];
+  for (let y of [1,3,5,10,dureeAns]) {
+    const val = Math.round((p.rental||0)*12*Math.pow(1.015,y));
+    projRows.push({y, val});
+  }
+  const maxProj = projRows[projRows.length-1].val;
+
+  document.getElementById('pdf-content').innerHTML = `
+    <div style="text-align:center;padding:20px 0 16px;border-bottom:2px solid #1a6fd4;margin-bottom:20px">
+      <div style="font-size:22pt;font-weight:800;color:#1a6fd4;letter-spacing:-0.5px">IMMO<span style="color:#1a1f2e">INTEL</span></div>
+      <div style="font-size:14pt;font-weight:700;color:#1a1f2e;margin-top:8px">Dossier de demande de financement</div>
+      <div style="font-size:11pt;color:#5a6270;margin-top:4px">${p.name} — ${p.city}</div>
+      <div style="font-size:9pt;color:#98a3b0;margin-top:6px">Préparé par ${nom} · ${today}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:#e8f0fb;border-radius:8px;padding:12px 14px">
+        <div style="font-size:9pt;color:#5a6270;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Cash-flow mensuel</div>
+        <div style="font-size:22pt;font-weight:800;color:${cf>=0?'#157a32':'#c0302a'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €</div>
+        <div style="font-size:9pt;color:#5a6270">après remboursement crédit</div>
+      </div>
+      <div style="background:#e4f5ea;border-radius:8px;padding:12px 14px">
+        <div style="font-size:9pt;color:#5a6270;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Rendement net</div>
+        <div style="font-size:22pt;font-weight:800;color:#157a32">${rNet} %</div>
+        <div style="font-size:9pt;color:#5a6270">après charges (${Math.round(charges*100)}%)</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">🏠 Le bien</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        ${[
+          ['Désignation', p.name],
+          ['Localisation', p.city],
+          ['Surface', p.surface+'m² — '+p.rooms+' pièces'],
+          ['DPE', 'Classe '+p.dpe],
+          ['Type', p.type],
+          ['Source', p.src||'ImmoIntel'],
+        ].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600">${v}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💶 Plan de financement</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        ${[
+          ['Prix d'acquisition', p.price.toLocaleString('fr-FR')+' €'],
+          ['Frais de notaire ('+Math.round(notaire*100)+'%)', fraisNot.toLocaleString('fr-FR')+' €'],
+          ['Budget travaux estimé', works.toLocaleString('fr-FR')+' €'],
+          ['<b>Coût total projet</b>', '<b>'+total.toLocaleString('fr-FR')+' €</b>'],
+          ['Apport personnel ('+Math.round(apportP*100)+'%)', apport.toLocaleString('fr-FR')+' €'],
+          ['<b>Montant emprunté</b>', '<b style="color:#1a6fd4">'+emprun.toLocaleString('fr-FR')+' €</b>'],
+          ['Taux d'intérêt', (taux*1200).toFixed(2)+' %'],
+          ['Durée', dureeAns+' ans'],
+          ['<b>Mensualité crédit</b>', '<b style="color:#c0302a">'+mensua.toLocaleString('fr-FR')+' €/mois</b>'],
+        ].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600">${v}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💰 Analyse de rentabilité</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        ${[
+          ['Loyer mensuel brut estimé', (p.rental||0).toLocaleString('fr-FR')+' €/mois'],
+          ['Charges locatives ('+Math.round(charges*100)+'%)', Math.round((p.rental||0)*charges).toLocaleString('fr-FR')+' €/mois'],
+          ['Loyer mensuel net', loyerNet.toLocaleString('fr-FR')+' €/mois'],
+          ['Loyers annuels nets', (loyerNet*12).toLocaleString('fr-FR')+' €/an'],
+          ['Rendement brut', rBrut+' %'],
+          ['Rendement net', rNet+' %'],
+          ['Cash-flow mensuel', (cf>=0?'+':'')+cf.toLocaleString('fr-FR')+' €/mois'],
+          ['Cash-flow annuel', (cf>=0?'+':''+(cf*12).toLocaleString('fr-FR'))+' €/an'],
+        ].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600;color:${v.includes('-')?'#c0302a':'#157a32'}">${v}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">📈 Projection des loyers</div>
+      ${projRows.map(({y,val})=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:10pt">
+          <span style="width:50px;color:#5a6270;text-align:right">An ${y}</span>
+          <div style="flex:1;height:16px;background:#f0f2f6;border-radius:3px;overflow:hidden">
+            <div style="width:${Math.round(val/maxProj*100)}%;height:100%;background:#1a6fd4;border-radius:3px"></div>
+          </div>
+          <span style="width:80px;font-weight:600;color:#1a6fd4">${val.toLocaleString('fr-FR')} €</span>
+        </div>`).join('')}
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">📊 Perspective de revente (${dureeAns} ans)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        ${[
+          ['Valeur de revente estimée', (p.resale||0).toLocaleString('fr-FR')+' €'],
+          ['Coût total de l'opération', total.toLocaleString('fr-FR')+' €'],
+          ['Plus-value potentielle', '+'+pv.toLocaleString('fr-FR')+' €'],
+          ['ROI global estimé', '+'+roi+' %'],
+          ['Tendance marché', p.trend||'N/A'],
+        ].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600;color:#1a6fd4">${v}</span></div>`).join('')}
+      </div>
+    </div>
+
+    ${works>0?`
+    <div style="margin-bottom:16px">
+      <div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">🔨 Travaux estimés</div>
+      ${(p.works||[]).map(w=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${w.n}</span><span style="font-weight:600">${w.c.toLocaleString('fr-FR')} €</span></div>`).join('')}
+    </div>`:''}
+
+    <div style="margin-top:16px;padding:10px 14px;background:#fdf3dc;border-radius:7px;font-size:9pt;color:#8a5f00;border-left:3px solid #8a5f00;line-height:1.5">
+      <b>⚠️ Avertissement :</b> Ce document est généré à titre indicatif par ImmoIntel. Les estimations présentées sont basées sur les données disponibles et ne constituent pas un engagement financier. Elles doivent être validées par un professionnel (notaire, courtier, conseiller fiscal).
+    </div>
+  `;
 }
 
 function openRapportBanquier(p) {
   if (!p) p = window.SEL;
   if (!p) return alert('Sélectionnez d\'abord un bien.');
-  const works = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
-  const total = p.price + works;
-  const emprun = Math.round(total*0.7);
-  const mensua = Math.round(emprun*0.004*Math.pow(1.004,240)/(Math.pow(1.004,240)-1));
-  const cf = (p.rental||0) - mensua;
-  const rBrut = ((p.rental*12/p.price)*100).toFixed(2);
-  const rNet = (rBrut*0.75).toFixed(2);
-  const pv = ((p.resale||p.price)-total);
-  const roi = ((pv/total)*100).toFixed(1);
-  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  document.getElementById('pdf-content').innerHTML = `
-  <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Généré le <b>${today}</b></p>
-  <div class="pdf-section">
-    <div class="pdf-section-title">🏠 Le bien</div>
-    <div class="pdf-row"><span class="pdf-lbl">Désignation</span><span class="pdf-val">${p.name}</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Localisation</span><span class="pdf-val">${p.city}</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Surface</span><span class="pdf-val">${p.surface} m² — ${p.rooms} pièces</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">DPE</span><span class="pdf-val">Classe ${p.dpe}</span></div>
-    ${p.url?`<div class="pdf-row"><span class="pdf-lbl">Annonce</span><span class="pdf-val" style="font-size:10px;color:var(--blue)">${p.url.substring(0,55)}…</span></div>`:''}
-  </div>
-  <div class="pdf-section">
-    <div class="pdf-section-title">💶 Plan de financement</div>
-    <div class="pdf-row"><span class="pdf-lbl">Prix d'acquisition</span><span class="pdf-val">${p.price.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Travaux estimés</span><span class="pdf-val">${works.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl"><b>Coût total</b></span><span class="pdf-val" style="color:var(--blue);font-weight:800">${total.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Apport (30%)</span><span class="pdf-val">${Math.round(total*0.3).toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Emprunt (70%)</span><span class="pdf-val">${emprun.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Mensualité (4%, 20 ans)</span><span class="pdf-val">${mensua.toLocaleString('fr-FR')} €/mois</span></div>
-  </div>
-  <div class="pdf-section">
-    <div class="pdf-section-title">💰 Rentabilité</div>
-    <div class="pdf-row"><span class="pdf-lbl">Loyer mensuel estimé</span><span class="pdf-val" style="color:var(--green)">${(p.rental||0).toLocaleString('fr-FR')} €/mois</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Rendement brut</span><span class="pdf-val">${rBrut} %</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Rendement net estimé</span><span class="pdf-val" style="color:var(--green)">${rNet} %</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Cash-flow mensuel</span><span class="pdf-val" style="color:${cf>=0?'var(--green)':'var(--red)'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €/mois</span></div>
-  </div>
-  <div class="pdf-section">
-    <div class="pdf-section-title">📈 Revente (horizon ${p.ld||20} ans)</div>
-    <div class="pdf-row"><span class="pdf-lbl">Valeur de revente estimée</span><span class="pdf-val">${(p.resale||0).toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">Plus-value potentielle</span><span class="pdf-val" style="color:var(--green)">+${pv.toLocaleString('fr-FR')} €</span></div>
-    <div class="pdf-row"><span class="pdf-lbl">ROI global estimé</span><span class="pdf-val" style="color:var(--blue)">+${roi} %</span></div>
-  </div>
-  ${works>0?`<div class="pdf-section"><div class="pdf-section-title">🔨 Travaux</div>${(p.works||[]).map(w=>`<div class="pdf-row"><span class="pdf-lbl">${w.n}</span><span class="pdf-val">${w.c.toLocaleString('fr-FR')} €</span></div>`).join('')}</div>`:''}
-  <div style="margin-top:14px;padding:10px;background:var(--amber-l);border-radius:7px;font-size:11px;color:var(--amber)">
-    <b>⚠️ Avertissement :</b> Estimations indicatives. À valider avec un professionnel.
-  </div>`;
+  window.SEL = p;
+  renderRapportContent(p);
   document.getElementById('pdf-modal').classList.add('open');
+}
+
+function printRapportPDF() {
+  const content = document.getElementById('pdf-content').innerHTML;
+  const pr = document.getElementById('print-rapport');
+  pr.innerHTML = content;
+  window.print();
+  setTimeout(() => { pr.innerHTML = ''; }, 1000);
 }
 
 function injectV4Buttons(p) {
@@ -1190,7 +1299,106 @@ console.log('[ImmoIntel V4] ✓');
 
 </script>
 
+
+<style>
+@media print {
+  body > *:not(#print-rapport) { display: none !important; }
+  #print-rapport { display: block !important; }
+  #pdf-modal { display: none !important; }
+}
+#print-rapport {
+  display: none;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  color: #1a1f2e;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 20mm;
+  font-size: 11pt;
+}
+#print-rapport .cover {
+  text-align: center;
+  padding: 40px 0 30px;
+  border-bottom: 3px solid #1a6fd4;
+  margin-bottom: 30px;
+}
+#print-rapport .cover h1 { font-size: 28pt; color: #1a6fd4; margin-bottom: 6px; }
+#print-rapport .cover h2 { font-size: 16pt; color: #1a1f2e; margin-bottom: 4px; }
+#print-rapport .cover .date { font-size: 10pt; color: #98a3b0; margin-top: 8px; }
+#print-rapport .cover .investor { font-size: 12pt; color: #5a6270; margin-top: 16px; }
+#print-rapport .pr-section { margin-bottom: 24px; }
+#print-rapport .pr-section h3 { font-size: 12pt; font-weight: 700; color: #1a6fd4; border-bottom: 1px solid #e8f0fb; padding-bottom: 6px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+#print-rapport .pr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#print-rapport .pr-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f2f6; font-size: 10pt; }
+#print-rapport .pr-lbl { color: #5a6270; }
+#print-rapport .pr-val { font-weight: 600; }
+#print-rapport .pr-highlight { background: #e8f0fb; border-radius: 8px; padding: 12px 16px; margin: 8px 0; }
+#print-rapport .pr-highlight .big { font-size: 22pt; font-weight: 800; color: #1a6fd4; }
+#print-rapport .pr-highlight .lbl { font-size: 9pt; color: #5a6270; margin-top: 2px; }
+#print-rapport .pr-green { color: #157a32 !important; }
+#print-rapport .pr-red { color: #c0302a !important; }
+#print-rapport .pr-blue { color: #1a6fd4 !important; }
+#print-rapport .disclaimer { margin-top: 30px; padding: 10px 14px; background: #fdf3dc; border-radius: 6px; font-size: 9pt; color: #8a5f00; border-left: 3px solid #8a5f00; }
+#print-rapport .chart-bar-wrap { margin: 8px 0; }
+#print-rapport .chart-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 9pt; }
+#print-rapport .chart-bar-lbl { width: 40px; text-align: right; color: #5a6270; }
+#print-rapport .chart-bar-bg { flex: 1; height: 14px; background: #f0f2f6; border-radius: 3px; overflow: hidden; }
+#print-rapport .chart-bar-fill { height: 100%; border-radius: 3px; background: #1a6fd4; }
+#print-rapport .chart-bar-val { width: 60px; font-weight: 600; color: #1a6fd4; }
+</style>
+
 <div id="pdf-modal">
+  <div class="pdf-box" style="width:680px;max-width:96vw">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <div style="font-size:17px;font-weight:800;color:var(--text)">📋 Dossier Banquier</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px">Personnalisez puis imprimez en PDF</div>
+      </div>
+      <button onclick="closePdfModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3)">×</button>
+    </div>
+
+    <!-- Champs éditables -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;padding:14px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Votre nom</div>
+        <input id="rp-nom" type="text" placeholder="Ex: Joel Simoes" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Taux d'intérêt (%)</div>
+        <input id="rp-taux" type="number" value="4" step="0.1" min="1" max="10" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Durée (années)</div>
+        <input id="rp-duree" type="number" value="20" step="1" min="5" max="30" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Apport (%)</div>
+        <input id="rp-apport" type="number" value="30" step="5" min="0" max="100" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Frais notaire (%)</div>
+        <input id="rp-notaire" type="number" value="8" step="0.5" min="0" max="15" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Charges locatives (%)</div>
+        <input id="rp-charges" type="number" value="25" step="5" min="0" max="50" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:#fff;outline:none" oninput="updateRapport()"/>
+      </div>
+    </div>
+
+    <!-- Aperçu du rapport -->
+    <div id="pdf-content" style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:16px;background:#fff"></div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-primary" onclick="printRapportPDF()" style="display:flex;align-items:center;gap:6px;justify-content:center">
+        🖨️ Imprimer / Enregistrer en PDF
+      </button>
+      <button class="btn-sec" onclick="closePdfModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Zone d impression cachée -->
+<div id="print-rapport"></div>
+
   <div class="pdf-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
       <div><div style="font-size:17px;font-weight:800">📋 Dossier Banquier</div>
