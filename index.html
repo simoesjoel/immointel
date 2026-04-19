@@ -211,7 +211,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
 .tb-btn.refresh{background:var(--teal-l);color:var(--teal);border-color:rgba(13,122,106,.25);display:flex;align-items:center;gap:5px}
 .tb-btn.refresh:hover{background:var(--teal);color:#fff}
 .tb-btn.refresh.spin svg{animation:spin .8s linear infinite}
-#tab-finance.active{display:flex!important;flex-direction:column;overflow-y:auto}
+#tab-finance.active{display:block!important;overflow:hidden}
+#fin-container{height:100%;width:100%}
 #pdf-modal,#palantir-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center}
 #pdf-modal.open,#palantir-modal.open{display:flex}
 .pdf-box{background:#fff;border-radius:14px;padding:24px;width:700px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -743,34 +744,7 @@ function renderDetail(){
     </div>
 
     <!-- TAB: FINANCEMENT -->
-    <div class="tab-pane" id="tab-finance"><div id="fin-container" style="display:flex;flex-direction:column;height:100%;overflow-y:auto"></div>
-      <div class="d-sec">
-        <div class="sec-lbl">Paramètres du prêt</div>
-        <div class="f-row"><span class="f-lbl">Capital</span><span class="f-val">${fp(total)}</span></div>
-        <div class="f-row"><span class="f-lbl">Apport conseillé (10%)</span><span class="f-val">${fp(Math.round(total*.1))}</span></div>
-        <div class="f-row"><span class="f-lbl">Taux estimé</span><span class="f-val">${p.lr}%</span></div>
-        <div class="f-row"><span class="f-lbl">Durée</span><span class="f-val">${p.ld} ans</span></div>
-        <div class="f-row"><span class="f-lbl">Assurance (~0.3%)</span><span class="f-val">${fp(Math.round(total*.003/12))}/m</span></div>
-        <div class="divider"></div>
-        <div class="sub-n">Mensualité totale</div>
-        <div class="big-n blue">${m.toLocaleString('fr')} €<span style="font-size:12px;font-weight:500">/mois</span></div>
-        <div class="f-row"><span class="f-lbl">Total remboursé</span><span class="f-val">${fp(loanTotal)}</span></div>
-        <div class="f-row"><span class="f-lbl">Coût du crédit</span><span class="f-val red">${fp(loanCost)}</span></div>
-        <div class="f-row"><span class="f-lbl">Coût total projet</span><span class="f-val">${fp(total+notaire)}</span></div>
-      </div>
-      <div class="d-sec" style="grid-column:span 3">
-        <div class="chart-wrap">
-          <div class="chart-title">
-            <span>Simulation remboursement sur ${p.ld} ans</span>
-            <span style="font-size:10px;color:var(--text3)">Capital vs intérêts</span>
-          </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-loan"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: RENDEMENT -->
-    <div class="tab-pane" id="tab-yield">
+    <div class="tab-pane" id="tab-finance"><div id="fin-container" style="display:grid;grid-template-columns:1fr 1fr;height:100%;overflow:hidden"></div><div class="tab-pane" id="tab-yield">
       <div class="d-sec">
         <div class="sec-lbl">Revenus locatifs</div>
         <div class="sub-n">Loyer mensuel estimé</div>
@@ -1058,20 +1032,23 @@ document.querySelectorAll('.s-filter').forEach((b,i)=>{
   b.onclick=function(){setF(types[i],this)};
 });
 
-// ══════════════════════════════
-// IMMOINTEL V5.4
-// ══════════════════════════════
+// ══════════════════════════════════
+// IMMOINTEL V5.5 — STABLE
+// ══════════════════════════════════
 const TAUX_MARCHE = {15:3.07, 20:3.26, 25:3.38, assurance:0.30, usure:5.19};
 let TAUX_LIVE = {...TAUX_MARCHE};
+let _finApport = 20;
+let _finDuree  = 20;
+let _finActive = false;
 
-// — Région —
+// Région
 const REGION_MAP={idf:['Paris','Boulogne','Vincennes','Versailles','Saint-Denis','Montreuil','Nanterre','Levallois','Neuilly','Issy','Créteil'],aura:['Lyon','Grenoble','Clermont-Ferrand','Annecy','Chambéry','Valence'],paca:['Marseille','Nice','Aix-en-Provence','Toulon','Avignon','Cannes'],occitanie:['Toulouse','Montpellier','Nîmes','Perpignan'],'nouvelle-aquitaine':['Bordeaux','La Rochelle','Limoges','Poitiers'],bretagne:['Rennes','Brest','Lorient','Quimper'],pdl:['Nantes','Angers','Le Mans','Saint-Nazaire'],'grand-est':['Strasbourg','Reims','Metz','Nancy','Mulhouse'],hdf:['Lille','Amiens','Roubaix','Tourcoing']};
 let currentRegion='all';
 function setRegion(v){currentRegion=v;if(typeof renderAll==='function')renderAll();if(typeof renderMap==='function')renderMap();}
 function regionMatches(p){if(currentRegion==='all')return true;return(REGION_MAP[currentRegion]||[]).some(c=>(p.city||'').toLowerCase().includes(c.toLowerCase()));}
 window.addEventListener('load',function(){const o=window.getFiltered;if(typeof o==='function')window.getFiltered=()=>o().filter(regionMatches);});
 
-// — Actualiser —
+// Actualiser
 function refreshData(){
   const btn=document.getElementById('refresh-btn');
   if(btn){btn.classList.add('spin');btn.style.pointerEvents='none';}
@@ -1086,34 +1063,52 @@ function refreshData(){
   },800);
 }
 
-// ══ SURCHARGE showTab ══
-// On attend que le DOM soit prêt puis on remplace showTab
+// ══ SURCHARGER renderCharts ET showTab après chargement ══
 window.addEventListener('load', function() {
-  const _orig = window.showTab;
+
+  // 1. Surcharger renderCharts pour bloquer quand finance est actif
+  const _origRenderCharts = window.renderCharts;
+  window.renderCharts = function(p) {
+    if (_finActive) {
+      // Finance actif : mettre à jour le financement au lieu des graphiques
+      renderFinancement(p);
+      return;
+    }
+    if (typeof _origRenderCharts === 'function') _origRenderCharts(p);
+  };
+
+  // 2. Surcharger showTab pour détecter finance
+  const _origShowTab = window.showTab;
   window.showTab = function(tab, el) {
-    // Comportement original
-    if (typeof _orig === 'function') _orig(tab, el);
-    // Si c'est l'onglet finance, on injecte notre UI
+    _finActive = (tab === 'finance');
+    if (typeof _origShowTab === 'function') _origShowTab(tab, el);
     if (tab === 'finance') {
-      setTimeout(function() {
-        const fin = document.getElementById('fin-container');
-        const p = window.SEL || (typeof selId !== 'undefined' ? PROPS.find(x=>x.id===selId) : null);
-        if (fin) renderFinancement(p, fin);
-      }, 60);
+      const p = window.SEL || window._lastProp;
+      renderFinancement(p);
     }
   };
-  console.log('[V5.4] showTab surchargé');
+
+  // 3. Mémoriser le bien sélectionné
+  const _origSelectProp = window.selectProp;
+  if (typeof _origSelectProp === 'function') {
+    window.selectProp = function(p) {
+      window._lastProp = p;
+      window.SEL = p;
+      _origSelectProp(p);
+      // Si finance actif, re-render
+      if (_finActive) renderFinancement(p);
+    };
+  }
+
+  console.log('[V5.5] renderCharts + showTab + selectProp surchargés');
 });
 
 // ══ FINANCEMENT ══
-let _finApport = 20;
-let _finDuree  = 20;
-
-function renderFinancement(p, container) {
-  if (!container) container = document.getElementById('fin-container');
+function renderFinancement(p) {
+  const container = document.getElementById('fin-container');
   if (!container) return;
   if (!p) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px;padding:30px;text-align:center">Sélectionnez un bien pour voir la simulation de financement</div>';
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px;padding:30px;text-align:center;grid-column:1/-1">Sélectionnez un bien pour voir la simulation de financement</div>';
     return;
   }
 
@@ -1157,10 +1152,8 @@ function renderFinancement(p, container) {
   }
 
   container.innerHTML = `
-  <div style="display:grid;grid-template-columns:1fr 1fr;height:100%;min-height:0;overflow:hidden">
-
-    <!-- GAUCHE : paramètres -->
-    <div style="padding:12px 14px;border-right:1px solid var(--border);overflow-y:auto">
+    <!-- GAUCHE -->
+    <div style="padding:12px 14px;border-right:1px solid var(--border);overflow-y:auto;height:100%">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⚙️ Paramètres du prêt</div>
 
       <div style="margin-bottom:12px">
@@ -1203,8 +1196,8 @@ function renderFinancement(p, container) {
       ${[['Prix acquisition',p.price.toLocaleString('fr-FR')+' €',''],['Frais notaire (~8%)',fraisNot.toLocaleString('fr-FR')+' €',''],['Travaux estimés',works.toLocaleString('fr-FR')+' €',''],['Coût total',total.toLocaleString('fr-FR')+' €','font-weight:800;color:var(--blue)'],['Votre apport ('+_finApport+'%)',apportMt.toLocaleString('fr-FR')+' €','color:var(--green);font-weight:700'],['Montant emprunté',emprun.toLocaleString('fr-FR')+' €','font-weight:800;color:var(--red)']].map(([l,v,s])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${l}</span><span style="${s}">${v}</span></div>`).join('')}
     </div>
 
-    <!-- DROITE : résultats + dossier + échéancier -->
-    <div style="overflow-y:auto">
+    <!-- DROITE -->
+    <div style="overflow-y:auto;height:100%">
       <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px">💳 Mensualités & Cash-flow</div>
         <div style="background:var(--bg3);border-radius:10px;padding:12px;border:1px solid var(--border);margin-bottom:8px">
@@ -1239,14 +1232,11 @@ function renderFinancement(p, container) {
             <div style="font-size:14px;font-weight:800;color:var(--blue);margin-top:2px">${taeg} %</div>
           </div>
         </div>
-
-        <!-- BOUTON DOSSIER BANQUIER -->
         <button onclick="openRapportBanquier(window.SEL||window._lastProp)"
           style="width:100%;padding:11px;background:var(--purple);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 10px rgba(99,64,160,.35)">
           📋 Générer le Dossier Banquier
         </button>
       </div>
-
       <div style="padding:12px 14px">
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:7px">
           📅 Échéancier — ${emprun.toLocaleString('fr-FR')} € sur ${_finDuree} ans à ${tauxN.toFixed(2)}%
@@ -1264,8 +1254,7 @@ function renderFinancement(p, container) {
           </table>
         </div>
       </div>
-    </div>
-  </div>`;
+    </div>`;
 }
 
 // Taux live
@@ -1278,26 +1267,22 @@ async function majTauxLive(){
     const d=await res.json();
     const txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     const match=txt.match(/\{[^{}]+\}/);
-    if(match){const t=JSON.parse(match[0]);if(t.t15&&t.t20&&t.t25){TAUX_LIVE={15:+t.t15,20:+t.t20,25:+t.t25,assurance:+(t.ass||0.30),usure:+(t.usure||5.19)};if(s)s.textContent=`✅ Mis à jour — ${t.date||today}`;const p=window.SEL||window._lastProp;if(p)renderFinancement(p);}}
+    if(match){const t=JSON.parse(match[0]);if(t.t15&&t.t20&&t.t25){TAUX_LIVE={15:+t.t15,20:+t.t20,25:+t.t25,assurance:+(t.ass||0.30),usure:+(t.usure||5.19)};if(s)s.textContent=`✅ Mis à jour — ${t.date||today}`;renderFinancement(window.SEL||window._lastProp);}}
   }catch(e){if(s)s.textContent='⚠️ Erreur — taux CAFPI avril 2026 utilisés';}
 }
 
-// ══ RAPPORT BANQUIER ══
+// Rapport banquier
 function updateRapport(){if(window._rp)renderRapportContent(window._rp);}
-
 function openRapportBanquier(p){
   if(!p){alert('Sélectionnez d\'abord un bien.');return;}
   window._rp=p;
-  const tEl=document.getElementById('rp-taux');
-  const dEl=document.getElementById('rp-duree');
-  const aEl=document.getElementById('rp-apport');
-  if(tEl) tEl.value=(TAUX_LIVE[_finDuree]||3.26).toFixed(2);
-  if(dEl) dEl.value=_finDuree;
-  if(aEl) aEl.value=_finApport;
+  const tEl=document.getElementById('rp-taux');const dEl=document.getElementById('rp-duree');const aEl=document.getElementById('rp-apport');
+  if(tEl)tEl.value=(TAUX_LIVE[_finDuree]||3.26).toFixed(2);
+  if(dEl)dEl.value=_finDuree;
+  if(aEl)aEl.value=_finApport;
   renderRapportContent(p);
   document.getElementById('pdf-modal').classList.add('open');
 }
-
 function renderRapportContent(p){
   const tx=parseFloat(document.getElementById('rp-taux')?.value||3.26)/100/12;
   const dr=parseInt(document.getElementById('rp-duree')?.value||20)*12;
@@ -1306,25 +1291,18 @@ function renderRapportContent(p){
   const ch=parseFloat(document.getElementById('rp-charges')?.value||25)/100;
   const nm=document.getElementById('rp-nom')?.value||'Investisseur';
   const wk=(p.works||[]).reduce((s,w)=>s+(w.c||0),0);
-  const fn=Math.round(p.price*nt);
-  const tot=p.price+wk+fn;
-  const emp=tot-Math.round(tot*ap);
+  const fn=Math.round(p.price*nt);const tot=p.price+wk+fn;const emp=tot-Math.round(tot*ap);
   const men=tx>0?Math.round(emp*tx*Math.pow(1+tx,dr)/(Math.pow(1+tx,dr)-1)):Math.round(emp/dr);
   const ass=Math.round(emp*(TAUX_LIVE.assurance||0.30)/100/12);
-  const ln=Math.round((p.rental||0)*(1-ch));
-  const cf=ln-(men+ass);
-  const rb=((p.rental||0)*12/p.price*100).toFixed(2);
-  const rn=(ln*12/tot*100).toFixed(2);
-  const pv=((p.resale||p.price)-tot);
-  const roi=(pv/tot*100).toFixed(1);
-  const da=Math.round(dr/12);
+  const ln=Math.round((p.rental||0)*(1-ch));const cf=ln-(men+ass);
+  const rb=((p.rental||0)*12/p.price*100).toFixed(2);const rn=(ln*12/tot*100).toFixed(2);
+  const pv=((p.resale||p.price)-tot);const roi=(pv/tot*100).toFixed(1);const da=Math.round(dr/12);
   const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
   const proj=[1,3,5,10,da].map(y=>({y,v:Math.round((p.rental||0)*12*Math.pow(1.015,y))}));
   const mp=proj[proj.length-1].v;
   const R=(l,v,c='')=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600;${c}">${v}</span></div>`;
   const S=(t)=>`<div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:10px 0 6px;text-transform:uppercase">${t}</div>`;
-  const el=document.getElementById('pdf-content');
-  if(!el) return;
+  const el=document.getElementById('pdf-content');if(!el)return;
   el.innerHTML=`
   <div style="text-align:center;padding:12px 0;border-bottom:2px solid #1a6fd4;margin-bottom:12px">
     <div style="font-size:18pt;font-weight:800;color:#1a6fd4">IMMO<span style="color:#1a1f2e">INTEL</span></div>
@@ -1337,7 +1315,7 @@ function renderRapportContent(p){
     <div style="background:#e4f5ea;border-radius:8px;padding:10px"><div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Rendement net</div><div style="font-size:18pt;font-weight:800;color:#157a32">${rn} %</div></div>
   </div>
   ${S('🏠 Le bien')}${R('Désignation',p.name)}${R('Localisation',p.city)}${R('Surface',p.surface+'m² — '+p.rooms+' pièces')}${R('DPE','Classe '+p.dpe)}
-  ${S('💶 Financement')}${R('Prix',p.price.toLocaleString('fr-FR')+' €')}${R('Notaire ('+Math.round(nt*100)+'%)',fn.toLocaleString('fr-FR')+' €')}${R('Travaux',wk.toLocaleString('fr-FR')+' €')}${R('<b>Total</b>','<b>'+tot.toLocaleString('fr-FR')+' €</b>')}${R('Apport',Math.round(tot*ap).toLocaleString('fr-FR')+' €')}${R('<b>Emprunt</b>','<b style="color:#1a6fd4">'+emp.toLocaleString('fr-FR')+' €</b>')}${R('Taux / Durée',(tx*1200).toFixed(2)+'% / '+da+' ans')}${R('<b>Mensualité totale</b>','<b style="color:#c0302a">'+(men+ass).toLocaleString('fr-FR')+' €/mois</b>')}
+  ${S('💶 Financement')}${R('Prix',p.price.toLocaleString('fr-FR')+' €')}${R('Notaire',fn.toLocaleString('fr-FR')+' €')}${R('Travaux',wk.toLocaleString('fr-FR')+' €')}${R('<b>Total</b>','<b>'+tot.toLocaleString('fr-FR')+' €</b>')}${R('Apport',Math.round(tot*ap).toLocaleString('fr-FR')+' €')}${R('<b>Emprunt</b>','<b style="color:#1a6fd4">'+emp.toLocaleString('fr-FR')+' €</b>')}${R('Taux / Durée',(tx*1200).toFixed(2)+'% / '+da+' ans')}${R('<b>Mensualité totale</b>','<b style="color:#c0302a">'+(men+ass).toLocaleString('fr-FR')+' €/mois</b>')}
   ${S('💰 Rentabilité')}${R('Loyer brut',(p.rental||0).toLocaleString('fr-FR')+' €/mois','color:#157a32')}${R('Loyer net',ln.toLocaleString('fr-FR')+' €/mois','color:#157a32')}${R('Rend. brut',rb+' %')}${R('Rend. net',rn+' %','color:#157a32')}${R('Cash-flow',(cf>=0?'+':'')+cf.toLocaleString('fr-FR')+' €/mois','color:'+(cf>=0?'#157a32':'#c0302a'))}
   ${S('📈 Projection loyers')}${proj.map(({y,v})=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10pt"><span style="width:42px;color:#5a6270;text-align:right">An ${y}</span><div style="flex:1;height:12px;background:#f0f2f6;border-radius:2px;overflow:hidden"><div style="width:${Math.round(v/mp*100)}%;height:100%;background:#1a6fd4;border-radius:2px"></div></div><span style="font-weight:600;color:#1a6fd4;width:80px">${v.toLocaleString('fr-FR')} €</span></div>`).join('')}
   ${S('📊 Revente ('+da+' ans)')}${R('Valeur estimée',(p.resale||0).toLocaleString('fr-FR')+' €')}${R('Plus-value','+'+pv.toLocaleString('fr-FR')+' €','color:#157a32')}${R('ROI','+'+roi+' %','color:#1a6fd4')}
@@ -1345,25 +1323,21 @@ function renderRapportContent(p){
   <div style="margin-top:10px;padding:8px 12px;background:#fdf3dc;border-radius:6px;font-size:9pt;color:#8a5f00;border-left:3px solid #8a5f00"><b>⚠️</b> Estimations indicatives. À valider avec un professionnel.</div>`;
 }
 
-// ══ PALANTIR ══
+// Palantir
 let _cmp=[];
 function openPalantir(){_cmp=[];document.getElementById('palantir-modal').classList.add('open');document.querySelectorAll('.pal-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderPalantir('overview');}
 function palTab(t,b){document.querySelectorAll('.pal-tab').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderPalantir(t);}
 function cm(p){return{...p,y:p.rental*12/p.price*100,cf:p.rental-Math.round(p.price*0.7*0.004)};}
 function renderPalantir(tab){
   const props=(PROPS||[]).filter(p=>p&&typeof p==='object'&&p.price&&p.rental).map(cm);
-  const el=document.getElementById('pal-content');
-  if(!el) return;
+  const el=document.getElementById('pal-content');if(!el)return;
   if(!props.length){el.innerHTML='<div style="text-align:center;padding:40px;color:#8b949e">Aucun bien</div>';return;}
   const n=props.length;
   if(tab==='overview'){
-    const aP=Math.round(props.reduce((s,p)=>s+p.price,0)/n);
-    const aY=(props.reduce((s,p)=>s+p.y,0)/n).toFixed(1);
-    const pCF=props.filter(p=>p.cf>0).length;
+    const aP=Math.round(props.reduce((s,p)=>s+p.price,0)/n);const aY=(props.reduce((s,p)=>s+p.y,0)/n).toFixed(1);const pCF=props.filter(p=>p.cf>0).length;
     const byT={};props.forEach(p=>{byT[p.type]=(byT[p.type]||0)+1;});
     const byC={};props.forEach(p=>{const c=(p.city||'?').split(' ')[0];byC[c]=(byC[c]||0)+1;});
-    const topC=Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    const mxC=topC[0]?.[1]||1;
+    const topC=Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,8);const mxC=topC[0]?.[1]||1;
     const yB={'<3%':0,'3-4%':0,'4-5%':0,'5-6%':0,'6-7%':0,'>7%':0};
     props.forEach(p=>{if(p.y<3)yB['<3%']++;else if(p.y<4)yB['3-4%']++;else if(p.y<5)yB['4-5%']++;else if(p.y<6)yB['5-6%']++;else if(p.y<7)yB['6-7%']++;else yB['>7%']++;});
     const mxY=Math.max(...Object.values(yB));
@@ -1376,7 +1350,7 @@ function renderPalantir(tab){
     <div class="pal-section"><div class="pal-section-title">🏠 Par type</div><div style="display:flex;gap:8px;flex-wrap:wrap">${Object.entries(byT).map(([t,v])=>`<div style="background:#21262d;border-radius:8px;padding:10px 14px;text-align:center;min-width:90px"><div style="font-size:16px;font-weight:800;color:${tC[t]||'#58a6ff'}">${v}</div><div style="font-size:10px;color:#8b949e;margin-top:2px;text-transform:capitalize">${t}</div><div style="font-size:10px;color:#58a6ff">${Math.round(v/n*100)}%</div></div>`).join('')}</div></div>`;
   }else if(tab==='villes'){
     const bC={};props.forEach(p=>{const c=(p.city||'?').split(' ')[0];if(!bC[c])bC[c]={n:0,sp:0,sy:0,scf:0,b:[]};bC[c].n++;bC[c].sp+=p.price;bC[c].sy+=p.y;bC[c].scf+=p.cf;bC[c].b.push(p);});
-    el.innerHTML=`<div class="pal-section"><div class="pal-section-title">🗺️ Par ville</div><table class="pal-table"><tr><th>Ville</th><th>Biens</th><th>Prix moy.</th><th>Rend.</th><th>CF moy.</th><th>Meilleur</th></tr>${Object.entries(bC).sort((a,b)=>b[1].n-a[1].n).map(([c,d])=>{const aP=Math.round(d.sp/d.n);const aY=(d.sy/d.n).toFixed(1);const aCF=Math.round(d.scf/d.n);const best=d.b.sort((a,b)=>(b.score||0)-(a.score||0))[0];return`<tr><td style="font-weight:700;color:#58a6ff">${c}</td><td><span style="background:#21262d;padding:2px 6px;border-radius:4px;font-size:10px">${d.n}</span></td><td>${(aP/1000).toFixed(0)}k€</td><td style="color:${parseFloat(aY)>=5?'#3fb950':'#58a6ff'}">${aY}%</td><td style="color:${aCF>=0?'#3fb950':'#f85149'}">${aCF>=0?'+':''}${aCF.toLocaleString('fr-FR')}€</td><td style="font-size:10px;color:#8b949e;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best?best.name.substring(0,22):'-'}</td></tr>`;}).join('')}</table></div>`;
+    el.innerHTML=`<div class="pal-section"><div class="pal-section-title">🗺️ Par ville</div><table class="pal-table"><tr><th>Ville</th><th>Biens</th><th>Prix</th><th>Rend.</th><th>CF</th><th>Meilleur</th></tr>${Object.entries(bC).sort((a,b)=>b[1].n-a[1].n).map(([c,d])=>{const aP=Math.round(d.sp/d.n);const aY=(d.sy/d.n).toFixed(1);const aCF=Math.round(d.scf/d.n);const best=d.b.sort((a,b)=>(b.score||0)-(a.score||0))[0];return`<tr><td style="font-weight:700;color:#58a6ff">${c}</td><td><span style="background:#21262d;padding:2px 6px;border-radius:4px;font-size:10px">${d.n}</span></td><td>${(aP/1000).toFixed(0)}k€</td><td style="color:${parseFloat(aY)>=5?'#3fb950':'#58a6ff'}">${aY}%</td><td style="color:${aCF>=0?'#3fb950':'#f85149'}">${aCF>=0?'+':''}${aCF.toLocaleString('fr-FR')}€</td><td style="font-size:10px;color:#8b949e;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best?best.name.substring(0,22):'-'}</td></tr>`;}).join('')}</table></div>`;
   }else if(tab==='top'){
     const tY=[...props].sort((a,b)=>b.y-a.y).slice(0,10);const tCF=[...props].sort((a,b)=>b.cf-a.cf).slice(0,10);const tS=[...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
     const T=(list,fn,col)=>`<table class="pal-table"><tr><th>#</th><th>Bien</th><th>Ville</th><th></th><th></th></tr>${list.map((p,i)=>{const pid=p.id;return`<tr><td style="color:#8b949e">${i+1}</td><td style="color:#e6edf3;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td><td style="color:#8b949e;font-size:10px">${(p.city||'').split(' ')[0]}</td><td style="color:${typeof col==='function'?col(p):col};font-weight:700">${fn(p)}</td><td><button class="pal-btn" onclick="document.getElementById('palantir-modal').classList.remove('open');setTimeout(()=>{const x=PROPS.find(q=>q.id===${pid});if(x&&typeof selectProp==='function')selectProp(x);},100)">Voir</button></td></tr>`;}).join('')}</table>`;
@@ -1388,31 +1362,16 @@ function renderPalantir(tab){
 }
 function toggleCmp(id,btn){const i=_cmp.indexOf(id);if(i>-1){_cmp.splice(i,1);btn.style.background='#21262d';btn.style.color='#8b949e';btn.style.borderColor='#30363d';}else{if(_cmp.length>=3)return;_cmp.push(id);btn.style.background='#1f6feb';btn.style.color='#fff';btn.style.borderColor='#1f6feb';}const el=document.getElementById('cmp-result');if(!el||!_cmp.length){if(el)el.innerHTML='';return;}const sel=_cmp.map(id=>PROPS.find(p=>p&&p.id===id)).filter(Boolean).map(cm);const mx=[['Prix',p=>p.price.toLocaleString('fr-FR')+' €'],['Surface',p=>p.surface+'m²'],['Loyer',p=>(p.rental||0)+' €/mois'],['Rendement',p=>p.y.toFixed(2)+'%'],['Cash-flow',p=>(p.cf>=0?'+':'')+p.cf+'€'],['Score IA',p=>(p.score||0)+'/100'],['DPE',p=>p.dpe||'?'],['Travaux',p=>(p.works||[]).reduce((s,w)=>s+w.c,0).toLocaleString('fr-FR')+' €']];el.innerHTML=`<div class="pal-section"><div class="pal-section-title">📊 Comparaison</div><table class="pal-table"><tr><th>Critère</th>${sel.map(p=>`<th style="color:#58a6ff">${(p.name||'').substring(0,15)}…</th>`).join('')}</tr>${mx.map(([l,fn])=>`<tr><td style="color:#8b949e">${l}</td>${sel.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</table></div>`;}
 
-// Hook sur SEL pour mémoriser le dernier bien sélectionné
-window.addEventListener('load', function() {
-  const origSelectProp = window.selectProp;
-  if (typeof origSelectProp === 'function') {
-    window.selectProp = function(p) {
-      window._lastProp = p;
-      window.SEL = p;
-      origSelectProp(p);
-    };
-  }
-});
-
-console.log('[ImmoIntel V5.4] ✓ fin-container + showTab intercepté');
+console.log('[ImmoIntel V5.5] ✓ renderCharts bloqué sur finance');
 
 </script>
 
 <div id="pdf-modal">
   <div class="pdf-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
-      <div>
-        <div style="font-size:16px;font-weight:800;color:var(--text)">📋 Dossier Banquier</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px">Personnalisez puis imprimez en PDF</div>
-      </div>
-      <button onclick="document.getElementById('pdf-modal').classList.remove('open')"
-        style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3)">×</button>
+      <div><div style="font-size:16px;font-weight:800;color:var(--text)">📋 Dossier Banquier</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Personnalisez puis imprimez en PDF</div></div>
+      <button onclick="document.getElementById('pdf-modal').classList.remove('open')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3)">×</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:10px">
       <div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Votre nom</div>
@@ -1446,8 +1405,7 @@ console.log('[ImmoIntel V5.4] ✓ fin-container + showTab intercepté');
         <button class="pal-tab" onclick="palTab('top',this)">Top opportunités</button>
         <button class="pal-tab" onclick="palTab('compare',this)">Comparateur</button>
       </div>
-      <button onclick="document.getElementById('palantir-modal').classList.remove('open')"
-        style="background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;margin-left:8px">×</button>
+      <button onclick="document.getElementById('palantir-modal').classList.remove('open')" style="background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;margin-left:8px">×</button>
     </div>
     <div class="pal-content" id="pal-content"></div>
   </div>
