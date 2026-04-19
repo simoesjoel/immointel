@@ -211,8 +211,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
 .tb-btn.refresh{background:var(--teal-l);color:var(--teal);border-color:rgba(13,122,106,.25);display:flex;align-items:center;gap:5px}
 .tb-btn.refresh:hover{background:var(--teal);color:#fff}
 .tb-btn.refresh.spin svg{animation:spin .8s linear infinite}
-#tab-finance.active{display:block!important;overflow:hidden}
-#fin-container{height:100%;width:100%}
+#tab-finance.active{display:block!important;overflow:hidden;height:100%}
+#fin-main{height:100%}
 #pdf-modal,#palantir-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center}
 #pdf-modal.open,#palantir-modal.open{display:flex}
 .pdf-box{background:#fff;border-radius:14px;padding:24px;width:700px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
@@ -744,7 +744,7 @@ function renderDetail(){
     </div>
 
     <!-- TAB: FINANCEMENT -->
-    <div class="tab-pane" id="tab-finance"><div id="fin-container" style="display:grid;grid-template-columns:1fr 1fr;height:100%;overflow:hidden"></div><div class="tab-pane" id="tab-yield">
+    <div class="tab-pane" id="tab-finance"><div id="fin-main" style="display:grid;grid-template-columns:1fr 1fr;height:100%;overflow:hidden"></div><div class="tab-pane" id="tab-yield">
       <div class="d-sec">
         <div class="sec-lbl">Revenus locatifs</div>
         <div class="sub-n">Loyer mensuel estimé</div>
@@ -1033,13 +1033,14 @@ document.querySelectorAll('.s-filter').forEach((b,i)=>{
 });
 
 // ══════════════════════════════════
-// IMMOINTEL V5.5 — STABLE
+// IMMOINTEL V5.6 — FIX CLIGNOTEMENT
+// La clé : renderCharts est surchargé pour être no-op sur finance
+// showTab injecte notre UI APRES renderCharts
 // ══════════════════════════════════
 const TAUX_MARCHE = {15:3.07, 20:3.26, 25:3.38, assurance:0.30, usure:5.19};
 let TAUX_LIVE = {...TAUX_MARCHE};
 let _finApport = 20;
 let _finDuree  = 20;
-let _finActive = false;
 
 // Région
 const REGION_MAP={idf:['Paris','Boulogne','Vincennes','Versailles','Saint-Denis','Montreuil','Nanterre','Levallois','Neuilly','Issy','Créteil'],aura:['Lyon','Grenoble','Clermont-Ferrand','Annecy','Chambéry','Valence'],paca:['Marseille','Nice','Aix-en-Provence','Toulon','Avignon','Cannes'],occitanie:['Toulouse','Montpellier','Nîmes','Perpignan'],'nouvelle-aquitaine':['Bordeaux','La Rochelle','Limoges','Poitiers'],bretagne:['Rennes','Brest','Lorient','Quimper'],pdl:['Nantes','Angers','Le Mans','Saint-Nazaire'],'grand-est':['Strasbourg','Reims','Metz','Nancy','Mulhouse'],hdf:['Lille','Amiens','Roubaix','Tourcoing']};
@@ -1063,59 +1064,61 @@ function refreshData(){
   },800);
 }
 
-// ══ SURCHARGER renderCharts ET showTab après chargement ══
 window.addEventListener('load', function() {
 
-  // 1. Surcharger renderCharts pour bloquer quand finance est actif
-  const _origRenderCharts = window.renderCharts;
+  // ── SURCHARGE renderCharts ──
+  // Quand tab-finance est actif, renderCharts est bloqué
+  // et on appelle renderFinancement à la place
+  const _origRC = window.renderCharts;
   window.renderCharts = function(p) {
-    if (_finActive) {
-      // Finance actif : mettre à jour le financement au lieu des graphiques
+    const finPane = document.getElementById('tab-finance');
+    if (finPane && finPane.classList.contains('active')) {
+      // Tab finance actif : on injecte notre UI, on ne touche pas aux charts
       renderFinancement(p);
       return;
     }
-    if (typeof _origRenderCharts === 'function') _origRenderCharts(p);
+    // Sinon comportement normal
+    if (typeof _origRC === 'function') _origRC(p);
   };
 
-  // 2. Surcharger showTab pour détecter finance
-  const _origShowTab = window.showTab;
+  // ── SURCHARGE showTab ──
+  const _origST = window.showTab;
   window.showTab = function(tab, el) {
-    _finActive = (tab === 'finance');
-    if (typeof _origShowTab === 'function') _origShowTab(tab, el);
+    if (typeof _origST === 'function') _origST(tab, el);
+    // Après le showTab original, si finance : injecter notre UI
     if (tab === 'finance') {
-      const p = window.SEL || window._lastProp;
+      const p = window.SEL || window._lastProp ||
+        (typeof selId !== 'undefined' ? PROPS.find(x=>x.id===selId) : null);
       renderFinancement(p);
     }
   };
 
-  // 3. Mémoriser le bien sélectionné
-  const _origSelectProp = window.selectProp;
-  if (typeof _origSelectProp === 'function') {
+  // ── MÉMORISER le bien sélectionné ──
+  const _origSP = window.selectProp;
+  if (typeof _origSP === 'function') {
     window.selectProp = function(p) {
       window._lastProp = p;
       window.SEL = p;
-      _origSelectProp(p);
-      // Si finance actif, re-render
-      if (_finActive) renderFinancement(p);
+      _origSP(p);
     };
   }
 
-  console.log('[V5.5] renderCharts + showTab + selectProp surchargés');
+  console.log('[V5.6] renderCharts + showTab surchargés — fin-main prêt');
 });
 
 // ══ FINANCEMENT ══
 function renderFinancement(p) {
-  const container = document.getElementById('fin-container');
-  if (!container) return;
+  const el = document.getElementById('fin-main');
+  if (!el) return;
   if (!p) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px;padding:30px;text-align:center;grid-column:1/-1">Sélectionnez un bien pour voir la simulation de financement</div>';
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px;padding:30px;text-align:center;grid-column:1/-1">Sélectionnez un bien pour voir la simulation de financement</div>';
     return;
   }
 
   const works    = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
   const fraisNot = Math.round(p.price*0.08);
   const total    = p.price+works+fraisNot;
-  const tauxN    = TAUX_LIVE[_finDuree]||TAUX_LIVE[20];
+  const tauxN    = TAUX_LIVE[_finDuree]||3.26;
   const tauxAss  = TAUX_LIVE.assurance||0.30;
   const tauxM    = tauxN/100/12;
   const assM     = tauxAss/100/12;
@@ -1151,11 +1154,9 @@ function renderFinancement(p) {
     </tr>`;
   }
 
-  container.innerHTML = `
-    <!-- GAUCHE -->
+  el.innerHTML = `
     <div style="padding:12px 14px;border-right:1px solid var(--border);overflow-y:auto;height:100%">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⚙️ Paramètres du prêt</div>
-
       <div style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
           <span style="color:var(--text2)">Apport personnel</span>
@@ -1168,18 +1169,15 @@ function renderFinancement(p) {
           <span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span>
         </div>
       </div>
-
       <div style="margin-bottom:12px">
         <div style="font-size:11px;color:var(--text2);margin-bottom:5px">Durée du prêt</div>
         <div style="display:flex;gap:5px">
-          ${[15,20,25].map(d=>`<button
-            onclick="_finDuree=${d};renderFinancement(window.SEL||window._lastProp)"
+          ${[15,20,25].map(d=>`<button onclick="_finDuree=${d};renderFinancement(window.SEL||window._lastProp)"
             style="flex:1;padding:7px 4px;border-radius:8px;line-height:1.3;border:2px solid ${_finDuree===d?'var(--blue)':'var(--border2)'};background:${_finDuree===d?'var(--blue)':'var(--bg3)'};color:${_finDuree===d?'#fff':'var(--text2)'};font-size:11px;font-weight:700;cursor:pointer">
             ${d} ans<br><span style="font-size:9px;opacity:.85">${(TAUX_LIVE[d]||3.26).toFixed(2)}%</span>
           </button>`).join('')}
         </div>
       </div>
-
       <div style="background:var(--blue-l);border-radius:8px;padding:10px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:10px;font-weight:700;color:var(--blue)">📡 Taux du marché</span>
@@ -1191,12 +1189,9 @@ function renderFinancement(p) {
             <span style="color:var(--text2)">${l}</span><span style="font-weight:700;color:var(--blue)">${v}</span>
           </div>`).join('')}
       </div>
-
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:7px">💶 Plan de financement</div>
       ${[['Prix acquisition',p.price.toLocaleString('fr-FR')+' €',''],['Frais notaire (~8%)',fraisNot.toLocaleString('fr-FR')+' €',''],['Travaux estimés',works.toLocaleString('fr-FR')+' €',''],['Coût total',total.toLocaleString('fr-FR')+' €','font-weight:800;color:var(--blue)'],['Votre apport ('+_finApport+'%)',apportMt.toLocaleString('fr-FR')+' €','color:var(--green);font-weight:700'],['Montant emprunté',emprun.toLocaleString('fr-FR')+' €','font-weight:800;color:var(--red)']].map(([l,v,s])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">${l}</span><span style="${s}">${v}</span></div>`).join('')}
     </div>
-
-    <!-- DROITE -->
     <div style="overflow-y:auto;height:100%">
       <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px">💳 Mensualités & Cash-flow</div>
@@ -1260,15 +1255,15 @@ function renderFinancement(p) {
 // Taux live
 async function majTauxLive(){
   const s=document.getElementById('taux-status');
-  if(s) s.textContent='🔄 Recherche en cours...';
+  if(s)s.textContent='🔄 Recherche...';
   try{
     const today=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,tools:[{type:'web_search_20250305',name:'web_search'}],system:'Retourne UNIQUEMENT un JSON valide sans markdown. Format: {"t15":3.07,"t20":3.26,"t25":3.38,"ass":0.30,"usure":5.19,"src":"CAFPI","date":"avril 2026"}',messages:[{role:'user',content:`Taux crédit immobilier France ${today} sur 15 20 25 ans assurance usure.`}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,tools:[{type:'web_search_20250305',name:'web_search'}],system:'Retourne UNIQUEMENT un JSON valide sans markdown. Format: {"t15":3.07,"t20":3.26,"t25":3.38,"ass":0.30,"usure":5.19,"src":"CAFPI","date":"avril 2026"}',messages:[{role:'user',content:`Taux crédit immobilier France ${today} 15 20 25 ans assurance usure.`}]})});
     const d=await res.json();
     const txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     const match=txt.match(/\{[^{}]+\}/);
     if(match){const t=JSON.parse(match[0]);if(t.t15&&t.t20&&t.t25){TAUX_LIVE={15:+t.t15,20:+t.t20,25:+t.t25,assurance:+(t.ass||0.30),usure:+(t.usure||5.19)};if(s)s.textContent=`✅ Mis à jour — ${t.date||today}`;renderFinancement(window.SEL||window._lastProp);}}
-  }catch(e){if(s)s.textContent='⚠️ Erreur — taux CAFPI avril 2026 utilisés';}
+  }catch(e){if(s)s.textContent='⚠️ Erreur — taux CAFPI avril 2026';}
 }
 
 // Rapport banquier
@@ -1278,8 +1273,7 @@ function openRapportBanquier(p){
   window._rp=p;
   const tEl=document.getElementById('rp-taux');const dEl=document.getElementById('rp-duree');const aEl=document.getElementById('rp-apport');
   if(tEl)tEl.value=(TAUX_LIVE[_finDuree]||3.26).toFixed(2);
-  if(dEl)dEl.value=_finDuree;
-  if(aEl)aEl.value=_finApport;
+  if(dEl)dEl.value=_finDuree;if(aEl)aEl.value=_finApport;
   renderRapportContent(p);
   document.getElementById('pdf-modal').classList.add('open');
 }
@@ -1362,7 +1356,7 @@ function renderPalantir(tab){
 }
 function toggleCmp(id,btn){const i=_cmp.indexOf(id);if(i>-1){_cmp.splice(i,1);btn.style.background='#21262d';btn.style.color='#8b949e';btn.style.borderColor='#30363d';}else{if(_cmp.length>=3)return;_cmp.push(id);btn.style.background='#1f6feb';btn.style.color='#fff';btn.style.borderColor='#1f6feb';}const el=document.getElementById('cmp-result');if(!el||!_cmp.length){if(el)el.innerHTML='';return;}const sel=_cmp.map(id=>PROPS.find(p=>p&&p.id===id)).filter(Boolean).map(cm);const mx=[['Prix',p=>p.price.toLocaleString('fr-FR')+' €'],['Surface',p=>p.surface+'m²'],['Loyer',p=>(p.rental||0)+' €/mois'],['Rendement',p=>p.y.toFixed(2)+'%'],['Cash-flow',p=>(p.cf>=0?'+':'')+p.cf+'€'],['Score IA',p=>(p.score||0)+'/100'],['DPE',p=>p.dpe||'?'],['Travaux',p=>(p.works||[]).reduce((s,w)=>s+w.c,0).toLocaleString('fr-FR')+' €']];el.innerHTML=`<div class="pal-section"><div class="pal-section-title">📊 Comparaison</div><table class="pal-table"><tr><th>Critère</th>${sel.map(p=>`<th style="color:#58a6ff">${(p.name||'').substring(0,15)}…</th>`).join('')}</tr>${mx.map(([l,fn])=>`<tr><td style="color:#8b949e">${l}</td>${sel.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</table></div>`;}
 
-console.log('[ImmoIntel V5.5] ✓ renderCharts bloqué sur finance');
+console.log('[ImmoIntel V5.6] ✓ renderCharts bloqué sur finance — stable');
 
 </script>
 
