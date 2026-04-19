@@ -238,9 +238,6 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Segoe UI',sans-
 .pal-table td{padding:6px 10px;color:#e6edf3;border-bottom:1px solid #161b22}
 .pal-table tr:hover td{background:#1c2128}
 .pal-btn{background:#1f6feb;color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer}
-/* Onglet Financement custom */
-.fin-pane{display:none;height:100%;overflow-y:auto;flex-direction:column}
-.fin-pane.active{display:flex}
 @media print{body>*:not(#print-rapport){display:none!important}#print-rapport{display:block!important}#pdf-modal,#palantir-modal{display:none!important}}
 #print-rapport{display:none;font-family:-apple-system,sans-serif;color:#1a1f2e;padding:20mm;font-size:11pt}
 
@@ -669,9 +666,9 @@ function renderDetail(){
     </div>
     <div class="d-tabs">
       <div class="d-tab active" onclick="showTab('overview',this)">Vue d'ensemble</div>
-      <div class="d-tab" onclick="showTab('finance',this)" id="tab-fin-btn" onclick="openFinancement()">Financement</div>
-      <div class="d-tab" onclick="showTab('yield',this)">Rendement</div>
-      <div class="d-tab" onclick="showTab('resale',this)">Revente</div>
+      <div class="d-tab" onclick="showTab('finance',this);setTimeout(()=>renderFinancement(window.SEL),80)">Financement</div>
+      <div class="d-tab" onclick="showTab('yield',this)">💰 Revenus &amp; Rentabilité</div>
+      <div class="d-tab" onclick="showTab('resale',this)">📈 Revendre ce bien</div>
     </div>
   </div>
   <div class="d-content">
@@ -1061,11 +1058,11 @@ document.querySelectorAll('.s-filter').forEach((b,i)=>{
 });
 
 // ═══════════════════════════════════
-// IMMOINTEL V5 — SCRIPT COMPLET
+// IMMOINTEL V5 — OVERRIDE COMPLET
 // ═══════════════════════════════════
 
-// — Taux marché avril 2026 (CAFPI/Meilleurtaux) —
-const TAUX_MARCHE = { 15: 3.07, 20: 3.26, 25: 3.38, assurance: 0.30, usure: 5.19 };
+// Taux marché avril 2026
+const TAUX_MARCHE = {15:3.07, 20:3.26, 25:3.38, assurance:0.30, usure:5.19};
 let TAUX_LIVE = {...TAUX_MARCHE};
 
 // — Région —
@@ -1081,117 +1078,106 @@ const REGION_MAP = {
   hdf:['Lille','Amiens','Roubaix','Tourcoing'],
 };
 let currentRegion = 'all';
+function setRegion(v){currentRegion=v;if(typeof renderAll==='function')renderAll();if(typeof renderMap==='function')renderMap();}
+function regionMatches(p){if(currentRegion==='all')return true;return(REGION_MAP[currentRegion]||[]).some(c=>(p.city||'').toLowerCase().includes(c.toLowerCase()));}
+window.addEventListener('load',function(){const o=window.getFiltered;if(typeof o==='function')window.getFiltered=()=>o().filter(regionMatches);});
 
-function setRegion(v) {
-  currentRegion = v;
-  if (typeof renderAll === 'function') renderAll();
-  if (typeof renderMap === 'function') renderMap();
+// — Actualiser sans vider —
+function refreshData(){
+  const btn=document.getElementById('refresh-btn');
+  if(btn){btn.classList.add('spin');btn.style.pointerEvents='none';}
+  setTimeout(()=>{
+    if(btn){btn.classList.remove('spin');btn.style.pointerEvents='';}
+    const sc=(typeof SCRAPED_DATA!=='undefined'&&Array.isArray(SCRAPED_DATA)&&SCRAPED_DATA.length>0)?SCRAPED_DATA:[];
+    PROPS=[...BASE_PROPS,...sc];
+    if(typeof renderAll==='function')renderAll();
+    if(typeof renderMap==='function')renderMap();
+    const b=document.getElementById('cnt-badge');
+    if(b){const o=b.textContent;b.textContent='✓ '+PROPS.length+' biens';b.style.color='var(--green)';b.style.background='var(--green-l)';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.background='';},2500);}
+  },800);
 }
-function regionMatches(p) {
-  if (currentRegion === 'all') return true;
-  return (REGION_MAP[currentRegion]||[]).some(c => (p.city||'').toLowerCase().includes(c.toLowerCase()));
-}
+
+// ═══════════════════════════════════
+// SURCHARGE showTab pour intercepter 'finance'
+// ═══════════════════════════════════
 window.addEventListener('load', function() {
-  const o = window.getFiltered;
-  if (typeof o === 'function') window.getFiltered = () => o().filter(regionMatches);
+  const _origShowTab = window.showTab;
+  window.showTab = function(tab, btn) {
+    if (tab === 'finance') {
+      // Exécuter le comportement original (affiche la pane)
+      if (typeof _origShowTab === 'function') _origShowTab(tab, btn);
+      // Puis injecter notre UI dans la pane finance
+      setTimeout(function() {
+        injecterFinancement(window.SEL);
+      }, 50);
+    } else {
+      if (typeof _origShowTab === 'function') _origShowTab(tab, btn);
+    }
+  };
 });
 
-// — Actualiser (sans vider) —
-function refreshData() {
-  const btn = document.getElementById('refresh-btn');
-  if (btn) { btn.classList.add('spin'); btn.style.pointerEvents = 'none'; }
-  setTimeout(() => {
-    if (btn) { btn.classList.remove('spin'); btn.style.pointerEvents = ''; }
-    const sc = (typeof SCRAPED_DATA !== 'undefined' && Array.isArray(SCRAPED_DATA) && SCRAPED_DATA.length > 0) ? SCRAPED_DATA : [];
-    PROPS = [...BASE_PROPS, ...sc];
-    if (typeof renderAll === 'function') renderAll();
-    if (typeof renderMap === 'function') renderMap();
-    const b = document.getElementById('cnt-badge');
-    if (b) {
-      const o = b.textContent;
-      b.textContent = '✓ ' + PROPS.length + ' biens';
-      b.style.color = 'var(--green)'; b.style.background = 'var(--green-l)';
-      setTimeout(() => { b.textContent = o; b.style.color = ''; b.style.background = ''; }, 2500);
-    }
-  }, 800);
-}
-
 // ═══════════════════════════════════
-// ONGLET FINANCEMENT
+// ONGLET FINANCEMENT — INJECTION DANS LA PANE EXISTANTE
 // ═══════════════════════════════════
-function openFinancement() {
-  // Activer l'onglet visuellement
-  document.querySelectorAll('.d-tab').forEach(t => t.classList.remove('active'));
-  const btn = document.getElementById('tab-fin-btn');
-  if (btn) btn.classList.add('active');
-
-  // Masquer toutes les panes, afficher la pane financement
-  document.querySelectorAll('.tab-pane').forEach(p => {
-    p.classList.remove('active');
-    p.style.display = 'none';
+function injecterFinancement(p) {
+  // Trouver la pane finance active
+  const panes = document.querySelectorAll('.tab-pane');
+  let finPane = null;
+  panes.forEach(pane => {
+    if (pane.dataset && pane.dataset.tab === 'finance') finPane = pane;
   });
-
-  // Créer ou récupérer la pane financement
-  let finPane = document.getElementById('fin-pane');
+  // Si pas trouvée par data-tab, chercher la pane active qui correspond au tab Financement
   if (!finPane) {
-    finPane = document.createElement('div');
-    finPane.id = 'fin-pane';
-    finPane.className = 'fin-pane active';
-    const dContent = document.querySelector('.d-content');
-    if (dContent) dContent.appendChild(finPane);
+    const tabBtns = document.querySelectorAll('.d-tab');
+    let finIdx = -1;
+    tabBtns.forEach((btn, i) => {
+      if (btn.textContent.trim().includes('Financement')) finIdx = i;
+    });
+    if (finIdx >= 0 && panes[finIdx]) finPane = panes[finIdx];
+    else if (panes[1]) finPane = panes[1]; // fallback : 2ème pane
   }
-  finPane.style.display = 'flex';
-  finPane.classList.add('active');
-
-  if (window.SEL) renderFinancement(window.SEL);
-  else finPane.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px">Sélectionnez un bien pour voir le financement</div>';
+  if (!finPane) { console.warn('[Fin] Pane finance introuvable'); return; }
+  if (!p) {
+    finPane.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:13px;padding:20px">Sélectionnez un bien pour voir le financement</div>';
+    return;
+  }
+  renderFinancement(p, finPane);
 }
 
-function renderFinancement(p) {
-  const finPane = document.getElementById('fin-pane');
-  if (!finPane || !p) return;
+function renderFinancement(p, container) {
+  if (!p || !container) return;
+  const works   = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
+  const fraisNot = Math.round(p.price*0.08);
+  const total   = p.price+works+fraisNot;
 
-  const works   = (p.works||[]).reduce((s,w) => s+(w.c||0), 0);
-  const fraisNot = Math.round(p.price * 0.08);
-  const total   = p.price + works + fraisNot;
+  // Lire les paramètres depuis les inputs persistés
+  const apport  = parseInt(document.getElementById('fin-apport-range')?.value||20);
+  const duree   = parseInt(document.getElementById('fin-duree-hidden')?.value||20);
+  const tauxN   = TAUX_LIVE[duree]||TAUX_LIVE[20];
+  const tauxAss = TAUX_LIVE.assurance||0.30;
+  const tauxM   = tauxN/100/12;
+  const assM    = tauxAss/100/12;
+  const n       = duree*12;
 
-  // Lire les paramètres depuis les inputs (persistance entre re-renders)
-  const apport  = parseInt(document.getElementById('fin-apport-input')?.value || 20);
-  const duree   = parseInt(document.getElementById('fin-duree-val')?.value || 20);
-  const tauxN   = TAUX_LIVE[duree] || TAUX_LIVE[20];
-  const tauxAss = TAUX_LIVE.assurance || 0.30;
-  const tauxM   = tauxN / 100 / 12;
-  const assM    = tauxAss / 100 / 12;
-  const n       = duree * 12;
+  const apportMt  = Math.round(total*apport/100);
+  const emprun    = total-apportMt;
+  const mensua    = tauxM>0?Math.round(emprun*tauxM*Math.pow(1+tauxM,n)/(Math.pow(1+tauxM,n)-1)):Math.round(emprun/n);
+  const assurMt   = Math.round(emprun*assM);
+  const mensuaTot = mensua+assurMt;
+  const coutCredit= mensuaTot*n-emprun;
+  const taeg      = (tauxN+tauxAss).toFixed(2);
+  const cf        = (p.rental||0)-mensuaTot;
 
-  const apportMt  = Math.round(total * apport / 100);
-  const emprun    = total - apportMt;
-  const mensua    = tauxM > 0
-    ? Math.round(emprun * tauxM * Math.pow(1+tauxM, n) / (Math.pow(1+tauxM, n)-1))
-    : Math.round(emprun / n);
-  const assurMt   = Math.round(emprun * assM);
-  const mensuaTot = mensua + assurMt;
-  const coutTotal = mensuaTot * n;
-  const coutCredit= coutTotal - emprun;
-  const taeg      = (tauxN + tauxAss).toFixed(2);
-  const cf        = (p.rental||0) - mensuaTot;
-
-  // Échéancier annuel
-  let capital = emprun;
-  let rows = '';
-  for (let yr = 1; yr <= duree; yr++) {
-    let intAn = 0, capAn = 0;
-    for (let m = 0; m < 12; m++) {
-      const intM = Math.max(0, capital * tauxM);
-      const capM = Math.max(0, mensua - intM);
-      intAn += intM; capAn += capM;
-      capital = Math.max(0, capital - capM);
-    }
-    const pct = Math.round((emprun - Math.max(0,capital)) / emprun * 100);
-    rows += `<tr style="border-bottom:1px solid var(--border)">
+  // Échéancier
+  let capital=emprun, rows='';
+  for(let yr=1;yr<=duree;yr++){
+    let iA=0,cA=0;
+    for(let m=0;m<12;m++){const iM=Math.max(0,capital*tauxM);const cM=Math.max(0,mensua-iM);iA+=iM;cA+=cM;capital=Math.max(0,capital-cM);}
+    const pct=Math.round((emprun-Math.max(0,capital))/emprun*100);
+    rows+=`<tr style="border-bottom:1px solid var(--border)">
       <td style="padding:4px 8px;font-weight:600;color:var(--blue)">An ${yr}</td>
-      <td style="padding:4px 8px;text-align:right;color:var(--red)">${Math.round(intAn).toLocaleString('fr-FR')} €</td>
-      <td style="padding:4px 8px;text-align:right;color:var(--green)">${Math.round(capAn).toLocaleString('fr-FR')} €</td>
+      <td style="padding:4px 8px;text-align:right;color:var(--red)">${Math.round(iA).toLocaleString('fr-FR')} €</td>
+      <td style="padding:4px 8px;text-align:right;color:var(--green)">${Math.round(cA).toLocaleString('fr-FR')} €</td>
       <td style="padding:4px 8px;text-align:right;color:var(--text2)">${Math.max(0,Math.round(capital)).toLocaleString('fr-FR')} €</td>
       <td style="padding:4px 8px;text-align:right">
         <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
@@ -1204,100 +1190,102 @@ function renderFinancement(p) {
     </tr>`;
   }
 
-  finPane.innerHTML = `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;flex:1;overflow:hidden">
+  // Overrider le display de la pane (le backup met display:grid à 4 colonnes)
+  container.style.cssText = 'display:flex!important;flex-direction:column;height:100%;overflow-y:auto';
 
-    <!-- Colonne gauche : paramètres -->
+  container.innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0">
+
+    <!-- COLONNE GAUCHE : paramètres -->
     <div style="padding:12px 14px;border-right:1px solid var(--border);overflow-y:auto">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⚙️ Paramètres du prêt</div>
 
-      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:10px">⚙️ Paramètres du prêt</div>
-
-      <!-- Apport -->
+      <!-- Slider apport -->
       <div style="margin-bottom:12px">
-        <label style="font-size:11px;color:var(--text2);display:flex;justify-content:space-between;margin-bottom:4px">
-          <span>Apport personnel</span>
-          <span id="fin-apport-label" style="font-weight:700;color:var(--blue)">${apport}% = ${apportMt.toLocaleString('fr-FR')} €</span>
-        </label>
-        <input type="range" id="fin-apport-input" min="0" max="50" step="5" value="${apport}"
-          oninput="
-            document.getElementById('fin-apport-label').textContent=this.value+'% = '+Math.round(${total}*this.value/100).toLocaleString('fr-FR')+' €';
-            renderFinancement(window.SEL)"
-          style="width:100%;accent-color:var(--blue)"/>
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:2px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+          <span style="color:var(--text2)">Apport personnel</span>
+          <span id="fin-apport-lbl" style="font-weight:700;color:var(--blue)">${apport}% = ${apportMt.toLocaleString('fr-FR')} €</span>
+        </div>
+        <input type="range" id="fin-apport-range" min="0" max="50" step="5" value="${apport}"
+          oninput="document.getElementById('fin-apport-lbl').textContent=this.value+'% = '+Math.round(${total}*this.value/100).toLocaleString('fr-FR')+' €';renderFinancement(window.SEL,this.closest('.tab-pane')||this.closest('[style*=flex]'))"
+          style="width:100%;accent-color:var(--blue);margin-bottom:2px"/>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3)">
           <span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span>
         </div>
       </div>
 
       <!-- Durée -->
       <div style="margin-bottom:12px">
-        <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Durée du prêt</label>
-        <input type="hidden" id="fin-duree-val" value="${duree}"/>
-        <div style="display:flex;gap:6px">
-          ${[15,20,25].map(d => `
-          <button onclick="document.getElementById('fin-duree-val').value=${d};renderFinancement(window.SEL)"
-            style="flex:1;padding:7px 4px;border-radius:8px;border:2px solid ${duree===d?'var(--blue)':'var(--border2)'};
-            background:${duree===d?'var(--blue)':'var(--bg3)'};color:${duree===d?'#fff':'var(--text2)'};
-            font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;line-height:1.3">
-            ${d} ans<br><span style="font-size:9px;opacity:.8">${(TAUX_LIVE[d]||3.26).toFixed(2)}%</span>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:5px">Durée du prêt</div>
+        <input type="hidden" id="fin-duree-hidden" value="${duree}"/>
+        <div style="display:flex;gap:5px">
+          ${[15,20,25].map(d=>`<button
+            onclick="document.getElementById('fin-duree-hidden').value=${d};renderFinancement(window.SEL,this.closest('.tab-pane')||this.closest('[style*=flex]'))"
+            style="flex:1;padding:7px 4px;border-radius:8px;line-height:1.3;
+            border:2px solid ${duree===d?'var(--blue)':'var(--border2)'};
+            background:${duree===d?'var(--blue)':'var(--bg3)'};
+            color:${duree===d?'#fff':'var(--text2)'};
+            font-size:11px;font-weight:700;cursor:pointer">
+            ${d} ans<br><span style="font-size:9px;opacity:.85">${(TAUX_LIVE[d]||3.26).toFixed(2)}%</span>
           </button>`).join('')}
         </div>
       </div>
 
       <!-- Taux marché -->
       <div style="background:var(--blue-l);border-radius:8px;padding:10px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <div style="font-size:10px;font-weight:700;color:var(--blue)">📡 Taux du marché</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:10px;font-weight:700;color:var(--blue)">📡 Taux du marché</span>
           <button onclick="majTauxLive()"
             style="font-size:9px;padding:2px 7px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer">
             🔄 Actualiser
           </button>
         </div>
-        <div id="taux-status" style="font-size:9px;color:var(--text3);margin-bottom:6px">Source : CAFPI/Meilleurtaux — Avril 2026</div>
-        ${[['15 ans', TAUX_LIVE[15].toFixed(2)+'%'], ['20 ans', TAUX_LIVE[20].toFixed(2)+'%'], ['25 ans', TAUX_LIVE[25].toFixed(2)+'%'], ['Assurance', TAUX_LIVE.assurance.toFixed(2)+'%'], ['TAEG estimé ('+duree+'ans)', taeg+'%'], ["Taux d'usure", TAUX_LIVE.usure.toFixed(2)+'%']].map(([l,v]) =>
-          `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
+        <div id="taux-status" style="font-size:9px;color:var(--text3);margin-bottom:5px">CAFPI / Meilleurtaux — Avril 2026</div>
+        ${[['15 ans',TAUX_LIVE[15].toFixed(2)+'%'],['20 ans',TAUX_LIVE[20].toFixed(2)+'%'],['25 ans',TAUX_LIVE[25].toFixed(2)+'%'],['Assurance',TAUX_LIVE.assurance.toFixed(2)+'%'],['TAEG ('+duree+'ans)',taeg+'%'],["Taux d'usure Q2/2026",TAUX_LIVE.usure.toFixed(2)+'%']].map(([l,v])=>`
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
             <span style="color:var(--text2)">${l}</span>
             <span style="font-weight:700;color:var(--blue)">${v}</span>
           </div>`).join('')}
       </div>
 
-      <!-- Résumé projet -->
-      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:6px">💶 Projet</div>
+      <!-- Plan financement -->
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:7px">💶 Plan de financement</div>
       ${[
-        ['Prix acquisition', p.price.toLocaleString('fr-FR')+' €', ''],
-        ['Frais de notaire', fraisNot.toLocaleString('fr-FR')+' €', ''],
-        ['Travaux estimés', works.toLocaleString('fr-FR')+' €', ''],
-        ['Coût total', total.toLocaleString('fr-FR')+' €', 'font-weight:800;color:var(--blue)'],
-        ['Votre apport', apportMt.toLocaleString('fr-FR')+' €', 'font-weight:700;color:var(--green)'],
-        ['Montant emprunté', emprun.toLocaleString('fr-FR')+' €', 'font-weight:800;color:var(--red)'],
-      ].map(([l,v,s]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
+        ['Prix acquisition',p.price.toLocaleString('fr-FR')+' €',''],
+        ['Frais notaire (~8%)',fraisNot.toLocaleString('fr-FR')+' €',''],
+        ['Travaux estimés',works.toLocaleString('fr-FR')+' €',''],
+        ['Coût total',total.toLocaleString('fr-FR')+' €','font-weight:800;color:var(--blue)'],
+        ['Votre apport ('+apport+'%)',apportMt.toLocaleString('fr-FR')+' €','color:var(--green);font-weight:700'],
+        ['Montant emprunté',emprun.toLocaleString('fr-FR')+' €','font-weight:800;color:var(--red)'],
+      ].map(([l,v,s])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
         <span style="color:var(--text2)">${l}</span><span style="${s}">${v}</span></div>`).join('')}
     </div>
 
-    <!-- Colonne droite : résultats + échéancier -->
+    <!-- COLONNE DROITE : résultats + bouton banquier + échéancier -->
     <div style="overflow-y:auto">
       <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px">💳 Mensualités</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px">💳 Mensualités & Cash-flow</div>
 
-        <div style="background:var(--bg3);border-radius:10px;padding:12px;border:1px solid var(--border);margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <div style="background:var(--bg3);border-radius:10px;padding:12px;border:1px solid var(--border);margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
             <span style="font-size:11px;color:var(--text2)">Mensualité crédit</span>
             <span style="font-size:14px;font-weight:800;color:var(--red)">${mensua.toLocaleString('fr-FR')} €/mois</span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px">
             <span style="font-size:11px;color:var(--text2)">+ Assurance (${tauxAss.toFixed(2)}%)</span>
             <span style="font-size:11px;font-weight:600;color:var(--amber)">${assurMt.toLocaleString('fr-FR')} €/mois</span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:7px">
             <span style="font-size:12px;font-weight:700">Total mensuel</span>
-            <span style="font-size:16px;font-weight:800;color:var(--red)">${mensuaTot.toLocaleString('fr-FR')} €/mois</span>
+            <span style="font-size:15px;font-weight:800;color:var(--red)">${mensuaTot.toLocaleString('fr-FR')} €/mois</span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:11px;color:var(--text2)">Loyer estimé</span>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;color:var(--text2)">Loyer mensuel estimé</span>
             <span style="font-size:13px;font-weight:700;color:var(--green)">${(p.rental||0).toLocaleString('fr-FR')} €/mois</span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:1px solid var(--border)">
             <span style="font-size:12px;font-weight:700">Cash-flow mensuel</span>
-            <span style="font-size:16px;font-weight:800;color:${cf>=0?'var(--green)':'var(--red)'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €/mois</span>
+            <span style="font-size:15px;font-weight:800;color:${cf>=0?'var(--green)':'var(--red)'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €/mois</span>
           </div>
         </div>
 
@@ -1314,27 +1302,27 @@ function renderFinancement(p) {
 
         <!-- BOUTON DOSSIER BANQUIER -->
         <button onclick="openRapportBanquier(window.SEL)"
-          style="width:100%;padding:10px;background:var(--purple);color:#fff;border:none;border-radius:8px;
-          font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-          box-shadow:0 2px 8px rgba(99,64,160,.3)">
+          style="width:100%;padding:11px;background:var(--purple);color:#fff;border:none;border-radius:9px;
+          font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
+          gap:8px;box-shadow:0 2px 10px rgba(99,64,160,.35);margin-bottom:2px">
           📋 Générer le Dossier Banquier
         </button>
       </div>
 
       <!-- Échéancier -->
       <div style="padding:12px 14px">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:7px">
           📅 Échéancier — ${emprun.toLocaleString('fr-FR')} € sur ${duree} ans à ${tauxN.toFixed(2)}%
         </div>
-        <div style="overflow-y:auto;max-height:140px">
+        <div style="overflow-y:auto;max-height:150px">
           <table style="width:100%;border-collapse:collapse;font-size:10px">
             <thead>
-              <tr style="background:var(--bg3);position:sticky;top:0">
+              <tr style="background:var(--bg3)">
                 <th style="padding:4px 8px;text-align:left;color:var(--text3);border-bottom:1px solid var(--border)">Année</th>
                 <th style="padding:4px 8px;text-align:right;color:var(--red);border-bottom:1px solid var(--border)">Intérêts</th>
                 <th style="padding:4px 8px;text-align:right;color:var(--green);border-bottom:1px solid var(--border)">Capital remb.</th>
                 <th style="padding:4px 8px;text-align:right;color:var(--text3);border-bottom:1px solid var(--border)">Reste dû</th>
-                <th style="padding:4px 8px;text-align:right;color:var(--text3);border-bottom:1px solid var(--border)">Remboursé</th>
+                <th style="padding:4px 8px;text-align:right;color:var(--text3);border-bottom:1px solid var(--border)">%</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -1345,96 +1333,88 @@ function renderFinancement(p) {
   </div>`;
 }
 
-// Mise à jour taux live via Claude API
+// Mise à jour taux live
 async function majTauxLive() {
-  const statusEl = document.getElementById('taux-status');
-  if (statusEl) { statusEl.textContent = '🔄 Recherche des taux en cours...'; }
+  const s=document.getElementById('taux-status');
+  if(s) s.textContent='🔄 Recherche en cours...';
   try {
-    const today = new Date().toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: 'Retourne UNIQUEMENT un objet JSON valide, sans texte avant ou après, sans markdown. Format: {"t15":3.07,"t20":3.26,"t25":3.38,"ass":0.30,"usure":5.19,"src":"CAFPI","date":"avril 2026"}',
-        messages: [{ role: 'user', content: `Taux immobiliers moyens France ${today} sur 15, 20, 25 ans, assurance emprunteur et taux usure.` }]
+    const today=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:300,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        system:'Retourne UNIQUEMENT un JSON valide sans markdown ni texte. Format: {"t15":3.07,"t20":3.26,"t25":3.38,"ass":0.30,"usure":5.19,"src":"CAFPI","date":"avril 2026"}',
+        messages:[{role:'user',content:`Taux crédit immobilier France ${today} sur 15, 20, 25 ans, assurance et taux usure.`}]
       })
     });
-    const d = await res.json();
-    const txt = d.content.filter(b => b.type==='text').map(b => b.text).join('');
-    const match = txt.match(/\{[^{}]+\}/);
-    if (match) {
-      const t = JSON.parse(match[0]);
-      if (t.t15 && t.t20 && t.t25) {
-        TAUX_LIVE = {15:+t.t15, 20:+t.t20, 25:+t.t25, assurance:+(t.ass||0.30), usure:+(t.usure||5.19)};
-        if (statusEl) statusEl.textContent = `✅ Mis à jour — ${t.date||today} — ${t.src||'live'}`;
-        if (window.SEL) renderFinancement(window.SEL);
+    const d=await res.json();
+    const txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const match=txt.match(/\{[^{}]+\}/);
+    if(match){
+      const t=JSON.parse(match[0]);
+      if(t.t15&&t.t20&&t.t25){
+        TAUX_LIVE={15:+t.t15,20:+t.t20,25:+t.t25,assurance:+(t.ass||0.30),usure:+(t.usure||5.19)};
+        if(s) s.textContent=`✅ Mis à jour — ${t.date||today}`;
+        if(window.SEL){
+          const panes=document.querySelectorAll('.tab-pane');
+          const finPane=panes[1]||null;
+          if(finPane) renderFinancement(window.SEL,finPane);
+        }
       }
     }
   } catch(e) {
-    if (statusEl) statusEl.textContent = '⚠️ Erreur — taux CAFPI avril 2026 utilisés';
+    if(s) s.textContent='⚠️ Erreur — taux CAFPI avril 2026 utilisés';
   }
 }
 
-// Cacher pane financement quand on clique sur un autre onglet
-document.addEventListener('click', function(e) {
-  const tab = e.target.closest('.d-tab');
-  if (tab && !tab.id === 'tab-fin-btn') {
-    const fp = document.getElementById('fin-pane');
-    if (fp) { fp.style.display = 'none'; fp.classList.remove('active'); }
-  }
-});
+// ═══ RAPPORT BANQUIER ═══
+function updateRapport(){if(window._rp)renderRapportContent(window._rp);}
 
-// ═══════════════════════════════════
-// RAPPORT BANQUIER
-// ═══════════════════════════════════
-function updateRapport() { if (window._rp) renderRapportContent(window._rp); }
-
-function openRapportBanquier(p) {
-  if (!p) p = window.SEL;
-  if (!p) { alert('Sélectionnez d\'abord un bien.'); return; }
-  window._rp = p;
-  // Synchroniser les valeurs depuis l'onglet financement
-  const dureeEl = document.getElementById('fin-duree-val');
-  const apportEl = document.getElementById('fin-apport-input');
-  if (dureeEl) document.getElementById('rp-duree').value = dureeEl.value;
-  if (apportEl) document.getElementById('rp-apport').value = apportEl.value;
-  // Taux du marché
-  const duree = parseInt(document.getElementById('rp-duree').value || 20);
-  document.getElementById('rp-taux').value = (TAUX_LIVE[duree] || 3.26).toFixed(2);
+function openRapportBanquier(p){
+  if(!p) p=window.SEL;
+  if(!p){alert('Sélectionnez d\'abord un bien.');return;}
+  window._rp=p;
+  const d=parseInt(document.getElementById('fin-duree-hidden')?.value||20);
+  const a=parseInt(document.getElementById('fin-apport-range')?.value||20);
+  const tEl=document.getElementById('rp-taux');
+  const dEl=document.getElementById('rp-duree');
+  const aEl=document.getElementById('rp-apport');
+  if(tEl) tEl.value=(TAUX_LIVE[d]||3.26).toFixed(2);
+  if(dEl) dEl.value=d;
+  if(aEl) aEl.value=a;
   renderRapportContent(p);
   document.getElementById('pdf-modal').classList.add('open');
 }
 
-function renderRapportContent(p) {
-  const tx  = parseFloat(document.getElementById('rp-taux').value||3.26)/100/12;
-  const dr  = parseInt(document.getElementById('rp-duree').value||20)*12;
-  const ap  = parseFloat(document.getElementById('rp-apport').value||20)/100;
-  const nt  = parseFloat(document.getElementById('rp-notaire').value||8)/100;
-  const ch  = parseFloat(document.getElementById('rp-charges').value||25)/100;
-  const nm  = document.getElementById('rp-nom').value || 'Investisseur';
-  const wk  = (p.works||[]).reduce((s,w)=>s+(w.c||0),0);
-  const fn  = Math.round(p.price*nt);
-  const tot = p.price+wk+fn;
-  const emp = tot-Math.round(tot*ap);
-  const men = tx>0?Math.round(emp*tx*Math.pow(1+tx,dr)/(Math.pow(1+tx,dr)-1)):Math.round(emp/dr);
-  const ass = Math.round(emp*TAUX_LIVE.assurance/100/12);
-  const ln  = Math.round((p.rental||0)*(1-ch));
-  const cf  = ln-(men+ass);
-  const rb  = ((p.rental||0)*12/p.price*100).toFixed(2);
-  const rn  = (ln*12/tot*100).toFixed(2);
-  const pv  = ((p.resale||p.price)-tot);
-  const roi = (pv/tot*100).toFixed(1);
-  const da  = Math.round(dr/12);
-  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const proj = [1,3,5,10,da].map(y=>({y,v:Math.round((p.rental||0)*12*Math.pow(1.015,y))}));
-  const mp = proj[proj.length-1].v;
-  const R = (l,v,c='') => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600;${c}">${v}</span></div>`;
-  const S = (t) => `<div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:10px 0 6px;text-transform:uppercase">${t}</div>`;
-
-  document.getElementById('pdf-content').innerHTML = `
+function renderRapportContent(p){
+  const tx=parseFloat(document.getElementById('rp-taux')?.value||3.26)/100/12;
+  const dr=parseInt(document.getElementById('rp-duree')?.value||20)*12;
+  const ap=parseFloat(document.getElementById('rp-apport')?.value||20)/100;
+  const nt=parseFloat(document.getElementById('rp-notaire')?.value||8)/100;
+  const ch=parseFloat(document.getElementById('rp-charges')?.value||25)/100;
+  const nm=document.getElementById('rp-nom')?.value||'Investisseur';
+  const wk=(p.works||[]).reduce((s,w)=>s+(w.c||0),0);
+  const fn=Math.round(p.price*nt);
+  const tot=p.price+wk+fn;
+  const emp=tot-Math.round(tot*ap);
+  const men=tx>0?Math.round(emp*tx*Math.pow(1+tx,dr)/(Math.pow(1+tx,dr)-1)):Math.round(emp/dr);
+  const ass=Math.round(emp*(TAUX_LIVE.assurance||0.30)/100/12);
+  const ln=Math.round((p.rental||0)*(1-ch));
+  const cf=ln-(men+ass);
+  const rb=((p.rental||0)*12/p.price*100).toFixed(2);
+  const rn=(ln*12/tot*100).toFixed(2);
+  const pv=((p.resale||p.price)-tot);
+  const roi=(pv/tot*100).toFixed(1);
+  const da=Math.round(dr/12);
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const proj=[1,3,5,10,da].map(y=>({y,v:Math.round((p.rental||0)*12*Math.pow(1.015,y))}));
+  const mp=proj[proj.length-1].v;
+  const R=(l,v,c='')=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:10pt"><span style="color:#5a6270">${l}</span><span style="font-weight:600;${c}">${v}</span></div>`;
+  const S=(t)=>`<div style="font-size:10pt;font-weight:700;color:#1a6fd4;border-bottom:1px solid #e8f0fb;padding-bottom:4px;margin:10px 0 6px;text-transform:uppercase">${t}</div>`;
+  const el=document.getElementById('pdf-content');
+  if(!el) return;
+  el.innerHTML=`
   <div style="text-align:center;padding:12px 0;border-bottom:2px solid #1a6fd4;margin-bottom:12px">
     <div style="font-size:18pt;font-weight:800;color:#1a6fd4">IMMO<span style="color:#1a1f2e">INTEL</span></div>
     <div style="font-size:12pt;font-weight:700;color:#1a1f2e;margin-top:4px">Dossier de demande de financement</div>
@@ -1442,94 +1422,43 @@ function renderRapportContent(p) {
     <div style="font-size:9pt;color:#98a3b0;margin-top:2px">Préparé par ${nm} · ${today}</div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-    <div style="background:#e8f0fb;border-radius:8px;padding:10px">
-      <div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Cash-flow mensuel</div>
-      <div style="font-size:18pt;font-weight:800;color:${cf>=0?'#157a32':'#c0302a'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €</div>
-    </div>
-    <div style="background:#e4f5ea;border-radius:8px;padding:10px">
-      <div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Rendement net</div>
-      <div style="font-size:18pt;font-weight:800;color:#157a32">${rn} %</div>
-    </div>
+    <div style="background:#e8f0fb;border-radius:8px;padding:10px"><div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Cash-flow mensuel</div><div style="font-size:18pt;font-weight:800;color:${cf>=0?'#157a32':'#c0302a'}">${cf>=0?'+':''}${cf.toLocaleString('fr-FR')} €</div></div>
+    <div style="background:#e4f5ea;border-radius:8px;padding:10px"><div style="font-size:9pt;color:#5a6270;font-weight:700;text-transform:uppercase">Rendement net</div><div style="font-size:18pt;font-weight:800;color:#157a32">${rn} %</div></div>
   </div>
-  ${S('🏠 Le bien')}
-  ${R('Désignation', p.name)}${R('Localisation', p.city)}${R('Surface', p.surface+'m² — '+p.rooms+' pièces')}${R('DPE', 'Classe '+p.dpe)}
-  ${S('💶 Financement')}
-  ${R('Prix', p.price.toLocaleString('fr-FR')+' €')}
-  ${R('Notaire ('+Math.round(nt*100)+'%)', fn.toLocaleString('fr-FR')+' €')}
-  ${R('Travaux', wk.toLocaleString('fr-FR')+' €')}
-  ${R('<b>Total projet</b>', '<b>'+tot.toLocaleString('fr-FR')+' €</b>')}
-  ${R('Apport ('+Math.round(ap*100)+'%)', Math.round(tot*ap).toLocaleString('fr-FR')+' €')}
-  ${R('<b>Emprunt</b>', '<b style="color:#1a6fd4">'+emp.toLocaleString('fr-FR')+' €</b>')}
-  ${R('Taux / Durée', (tx*1200).toFixed(2)+'% / '+da+' ans')}
-  ${R('<b>Mensualité totale</b>', '<b style="color:#c0302a">'+(men+ass).toLocaleString('fr-FR')+' €/mois</b>')}
-  ${S('💰 Rentabilité')}
-  ${R('Loyer brut', (p.rental||0).toLocaleString('fr-FR')+' €/mois', 'color:#157a32')}
-  ${R('Loyer net', ln.toLocaleString('fr-FR')+' €/mois', 'color:#157a32')}
-  ${R('Rend. brut', rb+' %')}${R('Rend. net', rn+' %', 'color:#157a32')}
-  ${R('Cash-flow', (cf>=0?'+':'')+cf.toLocaleString('fr-FR')+' €/mois', 'color:'+(cf>=0?'#157a32':'#c0302a'))}
-  ${S('📈 Projection loyers')}
-  ${proj.map(({y,v})=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10pt">
-    <span style="width:42px;color:#5a6270;text-align:right">An ${y}</span>
-    <div style="flex:1;height:12px;background:#f0f2f6;border-radius:2px;overflow:hidden">
-      <div style="width:${Math.round(v/mp*100)}%;height:100%;background:#1a6fd4;border-radius:2px"></div>
-    </div>
-    <span style="font-weight:600;color:#1a6fd4;width:80px">${v.toLocaleString('fr-FR')} €</span>
-  </div>`).join('')}
-  ${S('📊 Revente ('+da+' ans)')}
-  ${R('Valeur estimée', (p.resale||0).toLocaleString('fr-FR')+' €')}
-  ${R('Plus-value', '+'+pv.toLocaleString('fr-FR')+' €', 'color:#157a32')}
-  ${R('ROI global', '+'+roi+' %', 'color:#1a6fd4')}
-  ${wk>0 ? S('🔨 Travaux')+(p.works||[]).map(w=>R(w.n, w.c.toLocaleString('fr-FR')+' €')).join('') : ''}
-  <div style="margin-top:10px;padding:8px 12px;background:#fdf3dc;border-radius:6px;font-size:9pt;color:#8a5f00;border-left:3px solid #8a5f00">
-    <b>⚠️</b> Estimations indicatives ImmoIntel. À valider avec un professionnel.
-  </div>`;
+  ${S('🏠 Le bien')}${R('Désignation',p.name)}${R('Localisation',p.city)}${R('Surface',p.surface+'m² — '+p.rooms+' pièces')}${R('DPE','Classe '+p.dpe)}
+  ${S('💶 Financement')}${R('Prix',p.price.toLocaleString('fr-FR')+' €')}${R('Notaire ('+Math.round(nt*100)+'%)',fn.toLocaleString('fr-FR')+' €')}${R('Travaux',wk.toLocaleString('fr-FR')+' €')}${R('<b>Total</b>','<b>'+tot.toLocaleString('fr-FR')+' €</b>')}${R('Apport',Math.round(tot*ap).toLocaleString('fr-FR')+' €')}${R('<b>Emprunt</b>','<b style="color:#1a6fd4">'+emp.toLocaleString('fr-FR')+' €</b>')}${R('Taux / Durée',(tx*1200).toFixed(2)+'% / '+da+' ans')}${R('<b>Mensualité totale</b>','<b style="color:#c0302a">'+(men+ass).toLocaleString('fr-FR')+' €/mois</b>')}
+  ${S('💰 Rentabilité')}${R('Loyer brut',(p.rental||0).toLocaleString('fr-FR')+' €/mois','color:#157a32')}${R('Loyer net',ln.toLocaleString('fr-FR')+' €/mois','color:#157a32')}${R('Rend. brut',rb+' %')}${R('Rend. net',rn+' %','color:#157a32')}${R('Cash-flow',(cf>=0?'+':'')+cf.toLocaleString('fr-FR')+' €/mois','color:'+(cf>=0?'#157a32':'#c0302a'))}
+  ${S('📈 Projection loyers')}${proj.map(({y,v})=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10pt"><span style="width:42px;color:#5a6270;text-align:right">An ${y}</span><div style="flex:1;height:12px;background:#f0f2f6;border-radius:2px;overflow:hidden"><div style="width:${Math.round(v/mp*100)}%;height:100%;background:#1a6fd4;border-radius:2px"></div></div><span style="font-weight:600;color:#1a6fd4;width:80px">${v.toLocaleString('fr-FR')} €</span></div>`).join('')}
+  ${S('📊 Revente ('+da+' ans)')}${R('Valeur estimée',(p.resale||0).toLocaleString('fr-FR')+' €')}${R('Plus-value','+'+pv.toLocaleString('fr-FR')+' €','color:#157a32')}${R('ROI','+'+roi+' %','color:#1a6fd4')}
+  ${wk>0?S('🔨 Travaux')+(p.works||[]).map(w=>R(w.n,w.c.toLocaleString('fr-FR')+' €')).join(''):''}
+  <div style="margin-top:10px;padding:8px 12px;background:#fdf3dc;border-radius:6px;font-size:9pt;color:#8a5f00;border-left:3px solid #8a5f00"><b>⚠️</b> Estimations indicatives. À valider avec un professionnel.</div>`;
 }
 
-// Impression
-function printRapportPDF() {
-  const pr = document.getElementById('print-rapport');
-  pr.innerHTML = document.getElementById('pdf-content').innerHTML;
-  window.print();
-  setTimeout(() => { pr.innerHTML = ''; }, 1000);
-}
+// ═══ PALANTIR ═══
+let _cmp=[];
+function openPalantir(){_cmp=[];document.getElementById('palantir-modal').classList.add('open');document.querySelectorAll('.pal-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderPalantir('overview');}
+function palTab(t,b){document.querySelectorAll('.pal-tab').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderPalantir(t);}
+function cm(p){return{...p,y:p.rental*12/p.price*100,cf:p.rental-Math.round(p.price*0.7*0.004)};}
 
-// ═══════════════════════════════════
-// PALANTIR DASHBOARD
-// ═══════════════════════════════════
-let _cmp = [];
-function openPalantir() {
-  _cmp = [];
-  document.getElementById('palantir-modal').classList.add('open');
-  document.querySelectorAll('.pal-tab').forEach((t,i) => t.classList.toggle('active', i===0));
-  renderPalantir('overview');
-}
-function palTab(t, b) {
-  document.querySelectorAll('.pal-tab').forEach(x => x.classList.remove('active'));
-  if (b) b.classList.add('active');
-  renderPalantir(t);
-}
-function cm(p) { return {...p, y: p.rental*12/p.price*100, cf: p.rental-Math.round(p.price*0.7*0.004)}; }
-
-function renderPalantir(tab) {
-  const props = (PROPS||[]).filter(p => p&&typeof p==='object'&&p.price&&p.rental).map(cm);
-  const el = document.getElementById('pal-content');
-  if (!el) return;
-  if (!props.length) { el.innerHTML='<div style="text-align:center;padding:40px;color:#8b949e">Aucun bien</div>'; return; }
-  const n = props.length;
-
-  if (tab === 'overview') {
-    const aP = Math.round(props.reduce((s,p)=>s+p.price,0)/n);
-    const aY = (props.reduce((s,p)=>s+p.y,0)/n).toFixed(1);
-    const pCF = props.filter(p=>p.cf>0).length;
-    const byT = {}; props.forEach(p => { byT[p.type]=(byT[p.type]||0)+1; });
-    const byC = {}; props.forEach(p => { const c=(p.city||'?').split(' ')[0]; byC[c]=(byC[c]||0)+1; });
-    const topC = Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    const mxC = topC[0]?.[1]||1;
-    const yB = {'<3%':0,'3-4%':0,'4-5%':0,'5-6%':0,'6-7%':0,'>7%':0};
-    props.forEach(p => { if(p.y<3)yB['<3%']++;else if(p.y<4)yB['3-4%']++;else if(p.y<5)yB['4-5%']++;else if(p.y<6)yB['5-6%']++;else if(p.y<7)yB['6-7%']++;else yB['>7%']++; });
-    const mxY = Math.max(...Object.values(yB));
-    const tC = {locatif:'#e0620d',maison:'#157a32',immeuble:'#1a6fd4',appartement:'#b03888',commercial:'#7a4a1a'};
-    el.innerHTML = `
+function renderPalantir(tab){
+  const props=(PROPS||[]).filter(p=>p&&typeof p==='object'&&p.price&&p.rental).map(cm);
+  const el=document.getElementById('pal-content');
+  if(!el) return;
+  if(!props.length){el.innerHTML='<div style="text-align:center;padding:40px;color:#8b949e">Aucun bien</div>';return;}
+  const n=props.length;
+  if(tab==='overview'){
+    const aP=Math.round(props.reduce((s,p)=>s+p.price,0)/n);
+    const aY=(props.reduce((s,p)=>s+p.y,0)/n).toFixed(1);
+    const pCF=props.filter(p=>p.cf>0).length;
+    const byT={};props.forEach(p=>{byT[p.type]=(byT[p.type]||0)+1;});
+    const byC={};props.forEach(p=>{const c=(p.city||'?').split(' ')[0];byC[c]=(byC[c]||0)+1;});
+    const topC=Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const mxC=topC[0]?.[1]||1;
+    const yB={'<3%':0,'3-4%':0,'4-5%':0,'5-6%':0,'6-7%':0,'>7%':0};
+    props.forEach(p=>{if(p.y<3)yB['<3%']++;else if(p.y<4)yB['3-4%']++;else if(p.y<5)yB['4-5%']++;else if(p.y<6)yB['5-6%']++;else if(p.y<7)yB['6-7%']++;else yB['>7%']++;});
+    const mxY=Math.max(...Object.values(yB));
+    const tC={locatif:'#e0620d',maison:'#157a32',immeuble:'#1a6fd4',appartement:'#b03888',commercial:'#7a4a1a'};
+    el.innerHTML=`
     <div class="pal-grid">
       <div class="pal-kpi"><div class="pal-kpi-val">${n}</div><div class="pal-kpi-lbl">Biens analysés</div><div class="pal-kpi-sub">portefeuille complet</div></div>
       <div class="pal-kpi"><div class="pal-kpi-val">${(aP/1000).toFixed(0)}k€</div><div class="pal-kpi-lbl">Prix moyen</div><div class="pal-kpi-sub">médiane marché</div></div>
@@ -1541,45 +1470,30 @@ function renderPalantir(tab) {
       <div class="pal-section"><div class="pal-section-title">📊 Distribution rendements</div>${Object.entries(yB).map(([l,v])=>`<div class="pal-bar-row"><div class="pal-bar-lbl">${l}</div><div class="pal-bar-bg"><div class="pal-bar-fill" style="width:${mxY>0?Math.round(v/mxY*100):0}%;background:${v>0?'#3fb950':'#21262d'}">${v}</div></div></div>`).join('')}</div>
     </div>
     <div class="pal-section"><div class="pal-section-title">🏠 Par type</div><div style="display:flex;gap:8px;flex-wrap:wrap">${Object.entries(byT).map(([t,v])=>`<div style="background:#21262d;border-radius:8px;padding:10px 14px;text-align:center;min-width:90px"><div style="font-size:16px;font-weight:800;color:${tC[t]||'#58a6ff'}">${v}</div><div style="font-size:10px;color:#8b949e;margin-top:2px;text-transform:capitalize">${t}</div><div style="font-size:10px;color:#58a6ff">${Math.round(v/n*100)}%</div></div>`).join('')}</div></div>`;
-
-  } else if (tab === 'villes') {
-    const bC = {};
-    props.forEach(p => { const c=(p.city||'?').split(' ')[0];if(!bC[c])bC[c]={n:0,sp:0,sy:0,scf:0,b:[]};bC[c].n++;bC[c].sp+=p.price;bC[c].sy+=p.y;bC[c].scf+=p.cf;bC[c].b.push(p); });
-    el.innerHTML = `<div class="pal-section"><div class="pal-section-title">🗺️ Par ville</div><table class="pal-table"><tr><th>Ville</th><th>Biens</th><th>Prix moy.</th><th>Rend.</th><th>CF moy.</th><th>Meilleur bien</th></tr>${Object.entries(bC).sort((a,b)=>b[1].n-a[1].n).map(([c,d])=>{const aP=Math.round(d.sp/d.n);const aY=(d.sy/d.n).toFixed(1);const aCF=Math.round(d.scf/d.n);const best=d.b.sort((a,b)=>(b.score||0)-(a.score||0))[0];return`<tr><td style="font-weight:700;color:#58a6ff">${c}</td><td><span style="background:#21262d;padding:2px 6px;border-radius:4px;font-size:10px">${d.n}</span></td><td>${(aP/1000).toFixed(0)}k€</td><td style="color:${parseFloat(aY)>=5?'#3fb950':'#58a6ff'}">${aY}%</td><td style="color:${aCF>=0?'#3fb950':'#f85149'}">${aCF>=0?'+':''}${aCF.toLocaleString('fr-FR')}€</td><td style="font-size:10px;color:#8b949e;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best?best.name.substring(0,25):'-'}</td></tr>`;}).join('')}</table></div>`;
-
-  } else if (tab === 'top') {
+  } else if(tab==='villes'){
+    const bC={};props.forEach(p=>{const c=(p.city||'?').split(' ')[0];if(!bC[c])bC[c]={n:0,sp:0,sy:0,scf:0,b:[]};bC[c].n++;bC[c].sp+=p.price;bC[c].sy+=p.y;bC[c].scf+=p.cf;bC[c].b.push(p);});
+    el.innerHTML=`<div class="pal-section"><div class="pal-section-title">🗺️ Par ville</div><table class="pal-table"><tr><th>Ville</th><th>Biens</th><th>Prix moy.</th><th>Rend.</th><th>CF moy.</th><th>Meilleur</th></tr>${Object.entries(bC).sort((a,b)=>b[1].n-a[1].n).map(([c,d])=>{const aP=Math.round(d.sp/d.n);const aY=(d.sy/d.n).toFixed(1);const aCF=Math.round(d.scf/d.n);const best=d.b.sort((a,b)=>(b.score||0)-(a.score||0))[0];return`<tr><td style="font-weight:700;color:#58a6ff">${c}</td><td><span style="background:#21262d;padding:2px 6px;border-radius:4px;font-size:10px">${d.n}</span></td><td>${(aP/1000).toFixed(0)}k€</td><td style="color:${parseFloat(aY)>=5?'#3fb950':'#58a6ff'}">${aY}%</td><td style="color:${aCF>=0?'#3fb950':'#f85149'}">${aCF>=0?'+':''}${aCF.toLocaleString('fr-FR')}€</td><td style="font-size:10px;color:#8b949e;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${best?best.name.substring(0,22):'-'}</td></tr>`;}).join('')}</table></div>`;
+  } else if(tab==='top'){
     const tY=[...props].sort((a,b)=>b.y-a.y).slice(0,10);
     const tCF=[...props].sort((a,b)=>b.cf-a.cf).slice(0,10);
     const tS=[...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
     const T=(list,fn,col)=>`<table class="pal-table"><tr><th>#</th><th>Bien</th><th>Ville</th><th></th><th></th></tr>${list.map((p,i)=>{const pid=p.id;return`<tr><td style="color:#8b949e">${i+1}</td><td style="color:#e6edf3;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td><td style="color:#8b949e;font-size:10px">${(p.city||'').split(' ')[0]}</td><td style="color:${typeof col==='function'?col(p):col};font-weight:700">${fn(p)}</td><td><button class="pal-btn" onclick="document.getElementById('palantir-modal').classList.remove('open');setTimeout(()=>{const x=PROPS.find(q=>q.id===${pid});if(x&&typeof selectProp==='function')selectProp(x);},100)">Voir</button></td></tr>`;}).join('')}</table>`;
-    el.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+    el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
       <div class="pal-section"><div class="pal-section-title">🏆 Top rendement</div>${T(tY,p=>p.y.toFixed(1)+'%','#3fb950')}</div>
       <div class="pal-section"><div class="pal-section-title">💰 Top cash-flow</div>${T(tCF,p=>(p.cf>=0?'+':'')+p.cf.toLocaleString('fr-FR')+'€',p=>p.cf>=0?'#3fb950':'#f85149')}</div>
       <div class="pal-section"><div class="pal-section-title">⭐ Top score IA</div>${T(tS,p=>(p.score||0)+'/100','#58a6ff')}</div>
     </div>`;
-
-  } else if (tab === 'compare') {
-    const top25 = [...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,25);
-    el.innerHTML = `<div class="pal-section" style="margin-bottom:12px"><div class="pal-section-title">Sélectionnez 2 à 3 biens</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${top25.map(p=>`<button onclick="toggleCmp(${p.id},this)" style="padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#8b949e;font-size:10px;cursor:pointer">${(p.name||'').substring(0,20)} — ${(p.city||'').split(' ')[0]}</button>`).join('')}</div></div><div id="cmp-result"></div>`;
+  } else if(tab==='compare'){
+    const top25=[...props].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,25);
+    el.innerHTML=`<div class="pal-section" style="margin-bottom:12px"><div class="pal-section-title">Sélectionnez 2 à 3 biens</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${top25.map(p=>`<button onclick="toggleCmp(${p.id},this)" style="padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#8b949e;font-size:10px;cursor:pointer">${(p.name||'').substring(0,20)} — ${(p.city||'').split(' ')[0]}</button>`).join('')}</div></div><div id="cmp-result"></div>`;
   }
 }
+function toggleCmp(id,btn){const i=_cmp.indexOf(id);if(i>-1){_cmp.splice(i,1);btn.style.background='#21262d';btn.style.color='#8b949e';btn.style.borderColor='#30363d';}else{if(_cmp.length>=3)return;_cmp.push(id);btn.style.background='#1f6feb';btn.style.color='#fff';btn.style.borderColor='#1f6feb';}const el=document.getElementById('cmp-result');if(!el||!_cmp.length){if(el)el.innerHTML='';return;}const sel=_cmp.map(id=>PROPS.find(p=>p&&p.id===id)).filter(Boolean).map(cm);const mx=[['Prix',p=>p.price.toLocaleString('fr-FR')+' €'],['Surface',p=>p.surface+'m²'],['Loyer',p=>(p.rental||0)+' €/mois'],['Rendement',p=>p.y.toFixed(2)+'%'],['Cash-flow',p=>(p.cf>=0?'+':'')+p.cf+'€'],['Score IA',p=>(p.score||0)+'/100'],['DPE',p=>p.dpe||'?'],['Travaux',p=>(p.works||[]).reduce((s,w)=>s+w.c,0).toLocaleString('fr-FR')+' €']];el.innerHTML=`<div class="pal-section"><div class="pal-section-title">📊 Comparaison</div><table class="pal-table"><tr><th>Critère</th>${sel.map(p=>`<th style="color:#58a6ff">${(p.name||'').substring(0,15)}…</th>`).join('')}</tr>${mx.map(([l,fn])=>`<tr><td style="color:#8b949e">${l}</td>${sel.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</table></div>`;}
 
-function toggleCmp(id, btn) {
-  const i = _cmp.indexOf(id);
-  if (i>-1) { _cmp.splice(i,1); btn.style.background='#21262d'; btn.style.color='#8b949e'; btn.style.borderColor='#30363d'; }
-  else { if(_cmp.length>=3) return; _cmp.push(id); btn.style.background='#1f6feb'; btn.style.color='#fff'; btn.style.borderColor='#1f6feb'; }
-  const el = document.getElementById('cmp-result');
-  if (!el || !_cmp.length) { if(el) el.innerHTML=''; return; }
-  const sel = _cmp.map(id => PROPS.find(p=>p&&p.id===id)).filter(Boolean).map(cm);
-  const mx = [['Prix',p=>p.price.toLocaleString('fr-FR')+' €'],['Surface',p=>p.surface+'m²'],['Loyer',p=>(p.rental||0)+' €/mois'],['Rendement',p=>p.y.toFixed(2)+'%'],['Cash-flow',p=>(p.cf>=0?'+':'')+p.cf+'€'],['Score IA',p=>(p.score||0)+'/100'],['DPE',p=>p.dpe||'?'],['Travaux',p=>(p.works||[]).reduce((s,w)=>s+w.c,0).toLocaleString('fr-FR')+' €'],['Type',p=>p.type||'?']];
-  el.innerHTML = `<div class="pal-section"><div class="pal-section-title">📊 Comparaison</div><table class="pal-table"><tr><th>Critère</th>${sel.map(p=>`<th style="color:#58a6ff">${(p.name||'').substring(0,15)}…</th>`).join('')}</tr>${mx.map(([l,fn])=>`<tr><td style="color:#8b949e">${l}</td>${sel.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</table></div>`;
-}
-
-console.log('[ImmoIntel V5.2] ✓ '+(typeof PROPS!=='undefined'?PROPS.length:0)+' biens');
+console.log('[ImmoIntel V5.3] ✓ showTab intercepté — '+(typeof PROPS!=='undefined'?PROPS.length:0)+' biens');
 
 </script>
 
-<!-- ═══ MODAL DOSSIER BANQUIER ═══ -->
 <div id="pdf-modal">
   <div class="pdf-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
@@ -1593,55 +1507,41 @@ console.log('[ImmoIntel V5.2] ✓ '+(typeof PROPS!=='undefined'?PROPS.length:0)+
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:10px">
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Votre nom</div>
-        <input id="rp-nom" type="text" placeholder="Ex: Joel Simoes"
-          style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
+        <input id="rp-nom" type="text" placeholder="Ex: Joel Simoes" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
       </div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Taux (%)</div>
-        <input id="rp-taux" type="number" value="3.26" step="0.01" min="1" max="10" oninput="updateRapport()"
-          style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
+        <input id="rp-taux" type="number" value="3.26" step="0.01" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
       </div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Durée (ans)</div>
-        <input id="rp-duree" type="number" value="20" step="1" min="5" max="30" oninput="updateRapport()"
-          style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
+        <input id="rp-duree" type="number" value="20" step="1" min="5" max="30" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
       </div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Apport (%)</div>
-        <input id="rp-apport" type="number" value="20" step="5" min="0" max="100" oninput="updateRapport()"
-          style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
+        <input id="rp-apport" type="number" value="20" step="5" min="0" max="100" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
       </div>
       <div>
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Frais notaire (%)</div>
-        <input id="rp-notaire" type="number" value="8" step="0.5" min="0" max="15" oninput="updateRapport()"
-          style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Notaire (%)</div>
+        <input id="rp-notaire" type="number" value="8" step="0.5" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
       </div>
       <div>
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Charges loc. (%)</div>
-        <input id="rp-charges" type="number" value="25" step="5" min="0" max="50" oninput="updateRapport()"
-          style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Charges (%)</div>
+        <input id="rp-charges" type="number" value="25" step="5" oninput="updateRapport()" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;outline:none"/>
       </div>
     </div>
-    <div id="pdf-content"
-      style="max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:14px;background:#fff"></div>
+    <div id="pdf-content" style="max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:14px;background:#fff"></div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn-primary" onclick="window.print()" style="display:flex;align-items:center;gap:6px;justify-content:center">
-        🖨️ Imprimer / PDF
-      </button>
+      <button class="btn-primary" onclick="window.print()" style="display:flex;align-items:center;gap:6px">🖨️ Imprimer / PDF</button>
       <button class="btn-sec" onclick="document.getElementById('pdf-modal').classList.remove('open')">Fermer</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL PALANTIR ═══ -->
 <div id="palantir-modal">
   <div class="pal-box">
     <div class="pal-header">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-        <line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/>
-        <line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/>
-      </svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg>
       <div class="pal-title">ImmoIntel — Analyse IA du portefeuille</div>
       <div class="pal-tabs">
         <button class="pal-tab active" onclick="palTab('overview',this)">Vue d'ensemble</button>
@@ -1655,7 +1555,6 @@ console.log('[ImmoIntel V5.2] ✓ '+(typeof PROPS!=='undefined'?PROPS.length:0)+
     <div class="pal-content" id="pal-content"></div>
   </div>
 </div>
-
 <div id="print-rapport" style="display:none"></div>
 </body>
 </html>
